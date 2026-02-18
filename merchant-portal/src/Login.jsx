@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { supabase } from './supabaseClient'
-import { Mail, Lock, Package } from 'lucide-react'
+import { Mail, Lock } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import logo from './assets/logo.jpeg'
 
 function Login() {
   const [email, setEmail] = useState('')
@@ -15,7 +16,6 @@ function Login() {
     setMessage('')
 
     try {
-      // ✅ 1) Sign in with Supabase Auth (creates a real auth session)
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -34,8 +34,6 @@ function Login() {
         return
       }
 
-      // ✅ 2) Fetch merchant record by email
-      // (You can also fetch by user_id if you want, but first-time merchants may have user_id empty)
       const { data: merchant, error: merchantError } = await supabase
         .from('merchants')
         .select('*')
@@ -48,15 +46,12 @@ function Login() {
         return
       }
 
-      // ✅ 3) Check active status
       if (!merchant.is_active) {
         setMessage('Your account has been deactivated. Contact support.')
         setLoading(false)
         return
       }
 
-      // ✅ 4) Ensure merchants.user_id is linked to this auth user
-      // If it's empty or different, update it to auth.uid()
       if (!merchant.user_id || merchant.user_id !== user.id) {
         const { error: linkError } = await supabase
           .from('merchants')
@@ -70,7 +65,6 @@ function Login() {
           return
         }
 
-        // Re-fetch merchant after update (so localStorage has correct user_id)
         const { data: updatedMerchant, error: reFetchError } = await supabase
           .from('merchants')
           .select('*')
@@ -89,10 +83,10 @@ function Login() {
       }
 
       setMessage('Login successful! Redirecting...')
-
       setTimeout(() => {
         window.location.href = '/dashboard'
       }, 700)
+
     } catch (err) {
       console.error(err)
       setMessage('An error occurred. Please try again.')
@@ -104,11 +98,15 @@ function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 flex items-center justify-center p-6">
       <div className="bg-white/95 backdrop-blur-xl p-10 rounded-2xl shadow-2xl w-full max-w-md">
+        
         {/* Header */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="bg-blue-100 p-4 rounded-xl shadow-md mb-4">
-            <Package className="w-10 h-10 text-blue-600" />
-          </div>
+        <div className="flex flex-col items-center mb-6">
+          <img
+            src={logo}
+            alt="Chariot Delivery Service"
+            className="w-56 max-w-xs object-contain drop-shadow-xl mb-2"
+          />
+
           <h1 className="text-3xl font-bold text-gray-800">Merchant Login</h1>
           <p className="text-gray-500 text-sm mt-1">Access your delivery dashboard</p>
         </div>
