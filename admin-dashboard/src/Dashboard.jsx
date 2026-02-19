@@ -1,4 +1,4 @@
-// ✅ FULLY ENHANCED ADMIN DASHBOARD — All Fixes + Advanced Features
+// ✅ FULLY ENHANCED ADMIN DASHBOARD — Mobile Responsive + All Fixes
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { supabase } from './supabaseClient'
 import {
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GLOBAL PREMIUM STYLES — Brighter sidebar
+// GLOBAL PREMIUM STYLES — Mobile Responsive
 // ─────────────────────────────────────────────────────────────────────────────
 const PREMIUM_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
@@ -24,19 +24,21 @@ const PREMIUM_STYLES = `
     --sb-border:rgba(255,255,255,0.12); --sb-text:rgba(200,218,255,0.85);
     --accent:#2563eb; --accent2:#06b6d4;
     --font:'Space Grotesk',sans-serif; --mono:'DM Mono',monospace;
+    --sb-width:252px;
   }
+  *{box-sizing:border-box;}
   .adm-root{font-family:var(--font);}
-  .sb-shell{background:linear-gradient(160deg,#1e3a6e 0%,#152d57 40%,#0e1e40 100%);position:relative;overflow:hidden;}
+  .sb-shell{background:linear-gradient(160deg,#1e3a6e 0%,#152d57 40%,#0e1e40 100%);position:fixed;top:0;left:0;bottom:0;width:var(--sb-width);z-index:50;display:flex;flex-direction:column;overflow:hidden;}
   .sb-shell::before{content:'';position:absolute;top:-80px;left:-60px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,0.25) 0%,transparent 70%);pointer-events:none;}
   .sb-shell::after{content:'';position:absolute;bottom:80px;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(6,182,212,0.12) 0%,transparent 70%);pointer-events:none;}
-  .sb-logo-area{background:linear-gradient(135deg,rgba(37,99,235,0.28) 0%,rgba(6,182,212,0.1) 100%);border-bottom:1px solid rgba(255,255,255,0.14);padding:20px 16px;}
+  .sb-logo-area{background:linear-gradient(135deg,rgba(37,99,235,0.28) 0%,rgba(6,182,212,0.1) 100%);border-bottom:1px solid rgba(255,255,255,0.14);padding:20px 16px;flex-shrink:0;}
   .sb-logo-icon{background:linear-gradient(135deg,#2563eb 0%,#06b6d4 100%);padding:10px;border-radius:13px;box-shadow:0 0 26px rgba(37,99,235,0.6),inset 0 1px 0 rgba(255,255,255,0.25);flex-shrink:0;}
   .sb-brand{font-size:13px;font-weight:800;color:#ffffff;text-transform:uppercase;letter-spacing:0.1em;}
   .sb-subbrand{font-size:9px;letter-spacing:0.24em;color:rgba(180,210,255,0.6);text-transform:uppercase;font-family:var(--mono);margin-top:2px;}
   .sb-live-pill{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:9px;padding:7px 11px;margin-top:10px;}
   .live-dot{width:7px;height:7px;background:#10b981;border-radius:50%;display:inline-block;animation:livepulse 1.8s ease infinite;}
   @keyframes livepulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.45;transform:scale(0.8)}}
-  .sb-mini-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.1);}
+  .sb-mini-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.1);flex-shrink:0;}
   .sb-mini-tile{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:9px;padding:8px 5px;text-align:center;}
   .sb-mini-val{font-size:17px;font-weight:800;line-height:1;letter-spacing:-0.02em;}
   .sb-mini-lbl{font-size:8px;text-transform:uppercase;letter-spacing:0.12em;color:rgba(180,210,255,0.55);font-family:var(--mono);margin-top:3px;}
@@ -101,6 +103,73 @@ const PREMIUM_STYLES = `
   ::-webkit-scrollbar{width:5px;}
   ::-webkit-scrollbar-track{background:transparent;}
   ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px;}
+
+  /* ─── MOBILE OVERLAY ─── */
+  .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:49;backdrop-filter:blur(3px);}
+
+  /* ─── MAIN CONTENT WRAPPER ─── */
+  .adm-main{margin-left:var(--sb-width);min-width:0;flex:1;}
+
+  /* ─── HAMBURGER hidden on desktop ─── */
+  .adm-hamburger{display:none;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:7px 9px;cursor:pointer;align-items:center;justify-content:center;color:#374151;flex-shrink:0;}
+
+  /* ─── DESKTOP: sidebar always visible ─── */
+  @media(min-width:769px){
+    .sb-shell{transform:translateX(0)!important;transition:none!important;}
+    .sb-overlay{display:none!important;}
+    .adm-hamburger{display:none!important;}
+    .adm-main{margin-left:var(--sb-width)!important;}
+  }
+
+  /* ─── TABLET / MOBILE ─── */
+  @media(max-width:768px){
+    .adm-main{margin-left:0!important;}
+    .adm-hamburger{display:flex!important;}
+    .sb-shell{
+      transform:translateX(-100%);
+      transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);
+    }
+    .sb-shell.sb-open{transform:translateX(0)!important;}
+    .sb-overlay.sb-overlay-open{display:block!important;}
+
+    /* Topbar */
+    .adm-topbar-inner{padding:10px 14px!important;}
+    .adm-topbar-title{font-size:14px!important;}
+    .adm-topbar-date{display:none!important;}
+    .adm-topbar-create-label{display:none!important;}
+
+    /* Stat grids → 2 cols */
+    .stat-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important;}
+
+    /* Notification panel → full width */
+    .notif-panel{width:calc(100vw - 28px)!important;right:-8px!important;}
+
+    /* Stat filter modal → full screen */
+    .stat-filter-modal{max-width:100%!important;max-height:100dvh!important;border-radius:0!important;height:100dvh;}
+
+    /* Tab pills → smaller */
+    .tab-pill{padding:7px 10px!important;font-size:10px!important;}
+
+    /* Action buttons → compact */
+    .act-btn{padding:5px 8px!important;font-size:9.5px!important;}
+
+    /* Main padding */
+    .adm-main-pad{padding:12px!important;}
+
+    /* Responsive 2-col grids → 1 col */
+    .responsive-2col{grid-template-columns:1fr!important;}
+
+    /* Tables: horizontal scroll */
+    .adm-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    .adm-table-wrap table{min-width:560px;}
+  }
+
+  @media(max-width:480px){
+    /* Single column on very small phones */
+    .stat-grid{grid-template-columns:1fr!important;}
+    .stat-card{padding:14px!important;}
+    .filter-pill{padding:5px 10px!important;font-size:10px!important;}
+  }
 `
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -349,7 +418,7 @@ function DriverLeaderboard({ drivers, orders }) {
   const rest = rankedDrivers.slice(3)
 
   return (
-    <div className="space-y-6">
+    <div style={{ display:'flex', flexDirection:'column', gap:24 }}>
       <div className="bg-white rounded-xl border border-gray-100 p-5 flex flex-wrap gap-4 items-center justify-between shadow-sm">
         <div>
           <h3 style={{ fontSize:16, fontWeight:800, color:'#0f172a', marginBottom:2 }}>🏆 Driver Leaderboard</h3>
@@ -378,7 +447,7 @@ function DriverLeaderboard({ drivers, orders }) {
       </div>
 
       {top3.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="stat-grid" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16 }}>
           {top3.map((d, i) => (
             <div key={d.id} style={{
               background: i === 0 ? 'linear-gradient(135deg,#fffbeb,#fff)' : i === 1 ? 'linear-gradient(135deg,#f8fafc,#fff)' : 'linear-gradient(135deg,#fef3e2,#fff)',
@@ -438,7 +507,7 @@ function DriverLeaderboard({ drivers, orders }) {
       )}
 
       {rankedDrivers.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="stat-grid" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16 }}>
           {[
             { label:'Total Drivers', val: drivers.length, color:'#2563eb', bg:'#eff6ff' },
             { label:'Verified', val: drivers.filter(d=>d.is_verified).length, color:'#059669', bg:'#ecfdf5' },
@@ -588,7 +657,7 @@ function MerchantsTable({ merchants, orders, onToggleMerchant }) {
         </div>
       )}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden font-bold uppercase text-xs">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between flex-wrap gap-3">
           <div>
             <h3 className="text-lg font-bold text-gray-900 normal-case">Registered Merchants</h3>
             <p className="text-sm text-gray-500 mt-1 normal-case">Manage merchants and control their access</p>
@@ -597,51 +666,53 @@ function MerchantsTable({ merchants, orders, onToggleMerchant }) {
             <Store size={14} style={{ color:'#7c3aed' }}/><span style={{ fontSize:11, fontWeight:700, color:'#7c3aed', fontFamily:'var(--mono)' }}>{merchants.length} PARTNERS</span>
           </div>
         </div>
-        <table className="w-full text-left">
-          <thead className="bg-gray-50 border-b border-gray-100 text-gray-400">
-            <tr>
-              <th className="px-6 py-4 tracking-wider">Business Name</th>
-              <th className="px-6 py-4 text-center tracking-wider">Total Volume</th>
-              <th className="px-6 py-4 text-center tracking-wider">Revenue</th>
-              <th className="px-6 py-4 text-center tracking-wider">Status</th>
-              <th className="px-6 py-4 text-center tracking-wider">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {merchants.map(m => {
-              const mOrders = orders.filter(o => o.merchant_id === m.id)
-              const revenue = mOrders.filter(o => o.status === 'delivered').reduce((s, o) => s + Number(o.price || 0), 0)
-              return (
-                <tr key={m.id} className={`border-b border-gray-50 transition-colors ${m.is_disabled ? 'bg-gray-50/50' : 'hover:bg-gray-50/50'}`}>
-                  <td className="px-6 py-4">
-                    <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                      <div style={{ width:36, height:36, background: m.is_disabled ? '#f1f5f9' : 'linear-gradient(135deg,#f3e8ff,#ede9fe)', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, opacity: m.is_disabled ? 0.5 : 1 }}>
-                        <Store size={16} style={{ color: m.is_disabled ? '#9ca3af' : '#7c3aed' }}/>
+        <div className="adm-table-wrap">
+          <table className="w-full text-left" style={{ minWidth:560 }}>
+            <thead className="bg-gray-50 border-b border-gray-100 text-gray-400">
+              <tr>
+                <th className="px-6 py-4 tracking-wider">Business Name</th>
+                <th className="px-6 py-4 text-center tracking-wider">Total Volume</th>
+                <th className="px-6 py-4 text-center tracking-wider">Revenue</th>
+                <th className="px-6 py-4 text-center tracking-wider">Status</th>
+                <th className="px-6 py-4 text-center tracking-wider">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {merchants.map(m => {
+                const mOrders = orders.filter(o => o.merchant_id === m.id)
+                const revenue = mOrders.filter(o => o.status === 'delivered').reduce((s, o) => s + Number(o.price || 0), 0)
+                return (
+                  <tr key={m.id} className={`border-b border-gray-50 transition-colors ${m.is_disabled ? 'bg-gray-50/50' : 'hover:bg-gray-50/50'}`}>
+                    <td className="px-6 py-4">
+                      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                        <div style={{ width:36, height:36, background: m.is_disabled ? '#f1f5f9' : 'linear-gradient(135deg,#f3e8ff,#ede9fe)', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, opacity: m.is_disabled ? 0.5 : 1 }}>
+                          <Store size={16} style={{ color: m.is_disabled ? '#9ca3af' : '#7c3aed' }}/>
+                        </div>
+                        <div>
+                          <p style={{ fontSize:13, fontWeight:700, color: m.is_disabled ? '#9ca3af' : '#1e293b' }}>{m.business_name}</p>
+                          {m.is_disabled && <span style={{ fontSize:8, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', padding:'2px 7px', borderRadius:99, background:'#fef2f2', color:'#dc2626', border:'1px solid #fecaca', fontFamily:'var(--mono)' }}>DISABLED</span>}
+                        </div>
                       </div>
-                      <div>
-                        <p style={{ fontSize:13, fontWeight:700, color: m.is_disabled ? '#9ca3af' : '#1e293b' }}>{m.business_name}</p>
-                        {m.is_disabled && <span style={{ fontSize:8, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', padding:'2px 7px', borderRadius:99, background:'#fef2f2', color:'#dc2626', border:'1px solid #fecaca', fontFamily:'var(--mono)' }}>DISABLED</span>}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-center text-blue-600 text-base font-bold" style={{ fontFamily:'var(--mono)' }}>{mOrders.length}</td>
-                  <td className="px-6 py-4 text-center text-green-600 font-bold" style={{ fontFamily:'var(--mono)' }}>GH₵ {revenue.toFixed(2)}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`px-2 py-1 rounded-md text-[10px] ${m.is_disabled ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'}`}>
-                      {m.is_disabled ? '✗ Disabled' : '✓ Active'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <button onClick={() => setConfirmMerchant(m)} className="act-btn" style={{ background: m.is_disabled ? '#f0fdf4' : '#fef2f2', color: m.is_disabled ? '#059669' : '#dc2626', borderColor: m.is_disabled ? '#bbf7d0' : '#fecaca' }}>
-                      {m.is_disabled ? <ToggleRight size={11}/> : <ToggleLeft size={11}/>}
-                      {m.is_disabled ? 'Enable' : 'Disable'}
-                    </button>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td className="px-6 py-4 text-center text-blue-600 text-base font-bold" style={{ fontFamily:'var(--mono)' }}>{mOrders.length}</td>
+                    <td className="px-6 py-4 text-center text-green-600 font-bold" style={{ fontFamily:'var(--mono)' }}>GH₵ {revenue.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`px-2 py-1 rounded-md text-[10px] ${m.is_disabled ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'}`}>
+                        {m.is_disabled ? '✗ Disabled' : '✓ Active'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <button onClick={() => setConfirmMerchant(m)} className="act-btn" style={{ background: m.is_disabled ? '#f0fdf4' : '#fef2f2', color: m.is_disabled ? '#059669' : '#dc2626', borderColor: m.is_disabled ? '#bbf7d0' : '#fecaca' }}>
+                        {m.is_disabled ? <ToggleRight size={11}/> : <ToggleLeft size={11}/>}
+                        {m.is_disabled ? 'Enable' : 'Disable'}
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </>
   )
@@ -652,14 +723,14 @@ function MerchantsTable({ merchants, orders, onToggleMerchant }) {
 // ─────────────────────────────────────────────────────────────────────────────
 function DriversTable({ drivers, orders, onTabChange }) {
   return (
-    <div className="space-y-6">
+    <div style={{ display:'flex', flexDirection:'column', gap:24 }}>
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden font-bold">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between flex-wrap gap-3">
           <div>
             <h3 className="text-lg font-bold text-gray-900">Registered Drivers</h3>
             <p className="text-sm text-gray-500 mt-1">Manage and view all delivery drivers</p>
           </div>
-          <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+          <div style={{ display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
             <button onClick={() => onTabChange && onTabChange('leaderboard')} style={{ display:'flex', alignItems:'center', gap:6, background:'linear-gradient(135deg,#f59e0b,#d97706)', border:'none', borderRadius:10, padding:'8px 14px', fontSize:11, fontWeight:700, color:'#fff', cursor:'pointer', letterSpacing:'0.05em', textTransform:'uppercase' }}>
               <Trophy size={13}/> Leaderboard
             </button>
@@ -668,47 +739,49 @@ function DriversTable({ drivers, orders, onTabChange }) {
             </div>
           </div>
         </div>
-        <table className="w-full text-left uppercase text-xs">
-          <thead className="bg-gray-50 border-b border-gray-100 text-gray-400">
-            <tr>
-              <th className="px-6 py-4 tracking-wider">#</th>
-              <th className="px-6 py-4 tracking-wider">Rider Name</th>
-              <th className="px-6 py-4 text-center tracking-wider">Contact</th>
-              <th className="px-6 py-4 text-center tracking-wider">Deliveries</th>
-              <th className="px-6 py-4 text-center tracking-wider">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {drivers.map((d, i) => {
-              const dDelivered = orders.filter(o => o.driver_id === d.id && o.status === 'delivered').length
-              return (
-                <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 text-gray-400" style={{ fontFamily:'var(--mono)' }}>{String(i + 1).padStart(2, '0')}</td>
-                  <td className="px-6 py-4">
-                    <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                      <div style={{ width:34, height:34, background:'linear-gradient(135deg,#eff6ff,#dbeafe)', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                        <UserCircle size={18} style={{ color:'#2563eb' }}/>
+        <div className="adm-table-wrap">
+          <table className="w-full text-left uppercase text-xs" style={{ minWidth:500 }}>
+            <thead className="bg-gray-50 border-b border-gray-100 text-gray-400">
+              <tr>
+                <th className="px-6 py-4 tracking-wider">#</th>
+                <th className="px-6 py-4 tracking-wider">Rider Name</th>
+                <th className="px-6 py-4 text-center tracking-wider">Contact</th>
+                <th className="px-6 py-4 text-center tracking-wider">Deliveries</th>
+                <th className="px-6 py-4 text-center tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {drivers.map((d, i) => {
+                const dDelivered = orders.filter(o => o.driver_id === d.id && o.status === 'delivered').length
+                return (
+                  <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4 text-gray-400" style={{ fontFamily:'var(--mono)' }}>{String(i + 1).padStart(2, '0')}</td>
+                    <td className="px-6 py-4">
+                      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                        <div style={{ width:34, height:34, background:'linear-gradient(135deg,#eff6ff,#dbeafe)', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                          <UserCircle size={18} style={{ color:'#2563eb' }}/>
+                        </div>
+                        <div>
+                          <p style={{ fontSize:13, fontWeight:700, color:'#1e293b' }}>{d.full_name}</p>
+                          <p style={{ fontSize:9.5, color:'#94a3b8', fontFamily:'var(--mono)' }}>ID: {d.id}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p style={{ fontSize:13, fontWeight:700, color:'#1e293b' }}>{d.full_name}</p>
-                        <p style={{ fontSize:9.5, color:'#94a3b8', fontFamily:'var(--mono)' }}>ID: {d.id}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-center text-gray-600" style={{ fontFamily:'var(--mono)' }}>{d.phone_number}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span style={{ fontSize:13, fontWeight:800, color:'#2563eb', fontFamily:'var(--mono)' }}>{dDelivered}</span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`px-2 py-1 rounded-md text-[10px] ${d.is_verified ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-amber-50 text-amber-700 border border-amber-100'}`}>
-                      {d.is_verified ? '✓ Verified' : '⏳ Pending'}
-                    </span>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td className="px-6 py-4 text-center text-gray-600" style={{ fontFamily:'var(--mono)' }}>{d.phone_number}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span style={{ fontSize:13, fontWeight:800, color:'#2563eb', fontFamily:'var(--mono)' }}>{dDelivered}</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`px-2 py-1 rounded-md text-[10px] ${d.is_verified ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-amber-50 text-amber-700 border border-amber-100'}`}>
+                        {d.is_verified ? '✓ Verified' : '⏳ Pending'}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
@@ -736,13 +809,13 @@ function BatchOrderGroup({ batchId, orders, drivers, onAssign, onAssignBatch, on
   return (
     <div className="batch-card" style={{ borderLeft:`5px solid ${borderColor}` }}>
       <div className="p-6">
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex justify-between items-start mb-4" style={{ flexWrap:'wrap', gap:10 }}>
           <div className="flex items-center gap-4">
-            <div style={{ background:'linear-gradient(135deg,#7c3aed,#5b21b6)', padding:10, borderRadius:12, boxShadow:'0 4px 14px rgba(124,58,237,0.3)' }}>
+            <div style={{ background:'linear-gradient(135deg,#7c3aed,#5b21b6)', padding:10, borderRadius:12, boxShadow:'0 4px 14px rgba(124,58,237,0.3)', flexShrink:0 }}>
               <Layers className="w-6 h-6 text-white" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-lg uppercase tracking-tight text-gray-900 font-bold">BULK ORDER</p>
                 <span style={{ fontSize:9, fontWeight:700, color:'#fff', background:'#7c3aed', padding:'3px 9px', borderRadius:99, letterSpacing:'0.1em', fontFamily:'var(--mono)' }}>{orders.length} DROPS</span>
                 {allDelivered && <span style={{ fontSize:9, fontWeight:700, color:'#059669', background:'#f0fdf4', border:'1px solid #bbf7d0', padding:'3px 9px', borderRadius:99, fontFamily:'var(--mono)' }}>COMPLETE</span>}
@@ -758,7 +831,7 @@ function BatchOrderGroup({ batchId, orders, drivers, onAssign, onAssignBatch, on
         </div>
 
         <div className="mb-4">
-          <div className="flex justify-between text-[10px] uppercase text-gray-500 mb-2" style={{ fontFamily:'var(--mono)' }}>
+          <div className="flex justify-between text-[10px] uppercase text-gray-500 mb-2" style={{ fontFamily:'var(--mono)', flexWrap:'wrap', gap:4 }}>
             <span>Pending: {pendingCount}</span><span>In Progress: {assignedCount}</span><span>Delivered: {deliveredCount}</span>
             {cancelledCount > 0 && <span>Cancelled: {cancelledCount}</span>}
           </div>
@@ -774,15 +847,15 @@ function BatchOrderGroup({ batchId, orders, drivers, onAssign, onAssignBatch, on
 
         {!allDelivered && (
           <div className="mb-4">
-            <div className="flex gap-2 mb-3">
+            <div className="flex gap-2 mb-3" style={{ flexWrap:'wrap' }}>
               <button onClick={() => setAssignMode('batch')} className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold uppercase transition-all ${assignMode==='batch'?'bg-purple-600 text-white shadow-md':'bg-white text-gray-600 border border-gray-200 hover:border-purple-300'}`}>Assign All to One Rider</button>
               <button onClick={() => setAssignMode('individual')} className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold uppercase transition-all ${assignMode==='individual'?'bg-purple-600 text-white shadow-md':'bg-white text-gray-600 border border-gray-200 hover:border-purple-300'}`}>Assign Individually</button>
             </div>
             {assignMode === 'batch' && (
               <div className="p-4 bg-white rounded-lg border border-purple-200">
                 <p className="text-xs uppercase text-gray-500 mb-2">Assign One Rider to All {orders.length} Drops</p>
-                <div className="flex gap-3">
-                  <select value={selectedDriver} onChange={e => setSelectedDriver(e.target.value)} className="flex-1 p-2.5 border border-gray-200 rounded-lg font-bold text-sm bg-white outline-none focus:border-purple-500">
+                <div className="flex gap-3" style={{ flexWrap:'wrap' }}>
+                  <select value={selectedDriver} onChange={e => setSelectedDriver(e.target.value)} className="flex-1 p-2.5 border border-gray-200 rounded-lg font-bold text-sm bg-white outline-none focus:border-purple-500" style={{ minWidth:140 }}>
                     <option value="">Select Rider...</option>
                     {drivers.map(d => <option key={d.id} value={d.id}>{d.full_name}</option>)}
                   </select>
@@ -803,8 +876,8 @@ function BatchOrderGroup({ batchId, orders, drivers, onAssign, onAssignBatch, on
         )}
 
         {isExpanded && (
-          <div className="space-y-3 mt-4 border-t border-purple-200 pt-4">
-            <div className="flex items-center justify-between mb-3">
+          <div style={{ display:'flex', flexDirection:'column', gap:12, marginTop:16, borderTop:'1px solid #e9d5ff', paddingTop:16 }}>
+            <div className="flex items-center justify-between mb-3" style={{ flexWrap:'wrap', gap:6 }}>
               <p className="text-xs uppercase text-gray-500 font-bold">Individual Drop Details</p>
               {assignMode === 'individual' && <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded uppercase">Individual Assignment Mode</span>}
             </div>
@@ -827,7 +900,6 @@ function OrderCard({ order, drivers, onAssign, isInBatch=false, dropNumber=null,
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
 
-  // FIX #2: Use local time display for all timestamps
   const formatTime = ts => {
     if (!ts) return null
     try {
@@ -875,8 +947,8 @@ function OrderCard({ order, drivers, onAssign, isInBatch=false, dropNumber=null,
       )}
 
       <div className="order-card" style={isInBatch ? { borderRadius:12, marginBottom:10 } : { borderLeft: isCancelled ? '4px solid #d1d5db' : '4px solid #2563eb' }}>
-        <div style={{ padding:'16px 20px 12px', borderBottom:'1px solid #f1f5f9', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12 }}>
-          <div>
+        <div style={{ padding:'16px 20px 12px', borderBottom:'1px solid #f1f5f9', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
+          <div style={{ minWidth:0 }}>
             <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:4 }}>
               {isInBatch && <span style={{ fontSize:10, fontWeight:700, color:'#7c3aed', background:'#f3e8ff', padding:'2px 8px', borderRadius:5, fontFamily:'var(--mono)', border:'1px solid #ddd6fe' }}>Drop #{dropNumber}</span>}
               <span className="oid-badge">#{order.id}</span>
@@ -912,7 +984,6 @@ function OrderCard({ order, drivers, onAssign, isInBatch=false, dropNumber=null,
               <p className="text-[10px] uppercase text-gray-400 mb-1">Cancellation Reason</p>
               <p className="text-sm text-gray-700">{order.cancel_reason}</p>
               {order.cancelled_by && <p className="text-[10px] text-gray-400 mt-1">Cancelled by: {order.cancelled_by}</p>}
-              {/* FIX #2: Show cancelled_at in local time */}
               {order.cancelled_at && (
                 <p className="text-[10px] text-gray-400 mt-1">Cancelled at: {formatTime(order.cancelled_at)}</p>
               )}
@@ -951,7 +1022,6 @@ function OrderCard({ order, drivers, onAssign, isInBatch=false, dropNumber=null,
 
           {showLogs && (
             <div className="mt-4 p-4 bg-gray-50 rounded-xl space-y-3 border border-gray-200 border-dashed">
-              {/* FIX #2: Use full date+time for all timeline steps */}
               <TimelineStep label="Initialized" time={formatTime(order.created_at)} isDone={true} />
               <TimelineStep label="Assigned" time={formatTime(order.assigned_at)} isDone={!!order.driver_id} />
               <TimelineStep label="Picked Up" time={formatTime(order.picked_up_at)} isDone={order.status==='picked_up'||order.status==='delivered'} />
@@ -961,8 +1031,8 @@ function OrderCard({ order, drivers, onAssign, isInBatch=false, dropNumber=null,
           )}
 
           {order.status !== 'delivered' && order.status !== 'cancelled' && (!isInBatch || showAssignment) && (
-            <div className="mt-6 flex gap-3 border-t border-gray-100 pt-6">
-              <select value={selectedDriver} onChange={e => setSelectedDriver(e.target.value)} className="flex-1 p-2.5 border border-gray-200 rounded-lg font-bold text-sm bg-white outline-none focus:border-blue-500">
+            <div className="mt-6 flex gap-3 border-t border-gray-100 pt-6" style={{ flexWrap:'wrap' }}>
+              <select value={selectedDriver} onChange={e => setSelectedDriver(e.target.value)} className="flex-1 p-2.5 border border-gray-200 rounded-lg font-bold text-sm bg-white outline-none focus:border-blue-500" style={{ minWidth:140 }}>
                 <option value="">Select Rider...</option>
                 {drivers.map(d => <option key={d.id} value={d.id}>{d.full_name}</option>)}
               </select>
@@ -972,7 +1042,7 @@ function OrderCard({ order, drivers, onAssign, isInBatch=false, dropNumber=null,
             </div>
           )}
           {order.driver_name && (
-            <div style={{ marginTop:12, padding:'10px 14px', background:'#eff6ff', border:'1px solid #bfdbfe', borderRadius:10, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <div style={{ marginTop:12, padding:'10px 14px', background:'#eff6ff', border:'1px solid #bfdbfe', borderRadius:10, display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:6 }}>
               <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                 <Truck size={13} style={{ color:'#2563eb' }}/><span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', color:'#1d4ed8', textTransform:'uppercase', fontFamily:'var(--mono)' }}>Assigned Rider:</span>
               </div>
@@ -986,9 +1056,7 @@ function OrderCard({ order, drivers, onAssign, isInBatch=false, dropNumber=null,
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ORDERS VIEW — extracted as a stable top-level component to fix search cursor
-// FIX #1: This must be defined OUTSIDE Dashboard so it never gets re-created
-// on re-render, which causes inputs to unmount/remount and lose focus.
+// ORDERS VIEW — stable top-level component (fixes search cursor loss)
 // ─────────────────────────────────────────────────────────────────────────────
 function OrdersView({
   searchQuery, setSearchQuery,
@@ -1007,7 +1075,6 @@ function OrdersView({
 }) {
   return (
     <>
-      {/* FIX #1: Search input is stable — no re-mount on keystroke */}
       <div className="mb-4 relative">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <Search className="h-5 w-5 text-gray-400"/>
@@ -1026,8 +1093,8 @@ function OrdersView({
         <div className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase" style={{ fontFamily:'var(--mono)' }}>
           <Calendar className="w-4 h-4"/><span>Time:</span>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full">
-          <select value={timeFilter} onChange={e => setTimeFilter(e.target.value)} className="sm:w-72 w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white font-bold text-xs uppercase tracking-wide focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <div className="flex flex-col sm:flex-row gap-3 w-full" style={{ flexWrap:'wrap' }}>
+          <select value={timeFilter} onChange={e => setTimeFilter(e.target.value)} className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white font-bold text-xs uppercase tracking-wide focus:outline-none focus:ring-2 focus:ring-blue-500" style={{ minWidth:160 }}>
             <option value="all_time">All time</option>
             <option value="last_30m">Last 30 mins</option>
             <option value="last_1h">Last 1 hour</option>
@@ -1049,7 +1116,7 @@ function OrdersView({
               <span className="text-xs font-bold uppercase text-gray-500">Hours</span>
             </div>
           )}
-          <button onClick={() => { setTimeFilter('all_time'); setLastXHours(3) }} className="sm:ml-auto px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-xs font-bold uppercase text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-all">
+          <button onClick={() => { setTimeFilter('all_time'); setLastXHours(3) }} className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-xs font-bold uppercase text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-all">
             Clear Filter
           </button>
         </div>
@@ -1070,14 +1137,12 @@ function OrdersView({
         </button>
       </div>
 
-      {/* FIX #3: Added Cancelled tab to the tab bar */}
       <div className="tab-pill-bar mb-6">
         <TabButton active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} count={orders.length} icon={<List size={13}/>}>All Orders</TabButton>
         <TabButton active={activeTab === 'app'} onClick={() => setActiveTab('app')} count={appOrdersCount} icon={<Smartphone size={13}/>}>App Orders</TabButton>
         <TabButton active={activeTab === 'merchant_orders'} onClick={() => setActiveTab('merchant_orders')} count={merchantOrdersCount} icon={<Store size={13}/>}>Merchant Orders</TabButton>
         <TabButton active={activeTab === 'pending'} onClick={() => setActiveTab('pending')} count={pendingOrdersCount} icon={<Clock size={13}/>}>Pending</TabButton>
         <TabButton active={activeTab === 'delivered'} onClick={() => setActiveTab('delivered')} count={completedOrdersCount} icon={<CheckCircle size={13}/>}>Delivered</TabButton>
-        {/* FIX #3: Cancelled tab was missing from the "All Orders" tab bar */}
         <TabButton active={activeTab === 'cancelled'} onClick={() => setActiveTab('cancelled')} count={cancelledOrdersCount} icon={<XCircle size={13}/>}>Cancelled</TabButton>
       </div>
 
@@ -1126,7 +1191,6 @@ function Dashboard() {
 
   const [timeFilter, setTimeFilter] = useState('all_time')
   const [lastXHours, setLastXHours] = useState(3)
-
   const [statFilterType, setStatFilterType] = useState(null)
 
   const [showImageModal, setShowImageModal] = useState(false)
@@ -1183,6 +1247,17 @@ function Dashboard() {
   const markAllRead = () => { setNotifications(prev => prev.map(n => ({...n, read:true}))); setUnreadCount(0) }
   const clearAllNotifications = () => { setNotifications([]); setUnreadCount(0) }
 
+  // Close sidebar when clicking outside on mobile
+  const handleOverlayClick = useCallback(() => setSidebarOpen(false), [])
+
+  // Close sidebar on navigation (mobile)
+  const navigate = useCallback((view, extra = {}) => {
+    setActiveView(view)
+    if (extra.tab) setActiveTab(extra.tab)
+    if (extra.driversTab) setDriversTab(extra.driversTab)
+    setSidebarOpen(false)
+  }, [])
+
   useEffect(() => {
     const adminData = localStorage.getItem('admin')
     if (!adminData) { window.location.href = '/'; return }
@@ -1205,7 +1280,6 @@ function Dashboard() {
       })
       .on('postgres_changes', { event:'UPDATE', schema:'public', table:'requests' }, payload => {
         const updatedOrder = payload.new, oldOrder = payload.old
-        // FIX #2: Immediately update orders state so cancelled tab reflects changes instantly
         setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o))
         if (oldOrder?.status !== 'cancelled' && updatedOrder?.status === 'cancelled') {
           addNotificationRef.current('cancelled', updatedOrder, `Order #${updatedOrder.id} cancelled`)
@@ -1219,7 +1293,7 @@ function Dashboard() {
       if (e.key === 'Escape') {
         setShowImageModal(false); setShowMapModal(false)
         setShowCreateOrderModal(false); setStatFilterType(null)
-        setShowChangePassword(false)
+        setShowChangePassword(false); setSidebarOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -1276,25 +1350,17 @@ function Dashboard() {
     else alert(`✓ Rider assigned to all ${affected.length} orders in this batch!`)
   }
 
-  // FIX #2: handleCancelOrder now does optimistic update immediately so
-  // the cancelled tab reflects the change without needing a full reload.
   const handleCancelOrder = async (orderId, reason) => {
     const cancelledAt = new Date().toISOString()
-    // Optimistic update — cancelled order shows immediately in cancelled tab
     setOrders(prev => prev.map(o => o.id === orderId
       ? { ...o, status:'cancelled', cancel_reason:reason||'Cancelled by Admin', cancelled_by:'Admin', cancelled_at:cancelledAt }
       : o
     ))
     const { error } = await supabase.from('requests').update({
-      status:'cancelled',
-      cancel_reason:reason||'Cancelled by Admin',
-      cancelled_by:'Admin',
-      cancelled_at:cancelledAt
+      status:'cancelled', cancel_reason:reason||'Cancelled by Admin',
+      cancelled_by:'Admin', cancelled_at:cancelledAt
     }).eq('id', orderId)
-    if (error) {
-      alert('Failed to cancel: ' + error.message)
-      loadData() // revert optimistic update on error
-    }
+    if (error) { alert('Failed to cancel: ' + error.message); loadData() }
   }
 
   const handleToggleMerchant = async (merchantId, disable) => {
@@ -1311,12 +1377,8 @@ function Dashboard() {
       return alert('Please fill in all required fields')
     }
     const { error } = await supabase.from('requests').insert([{
-      ...newOrderForm,
-      status:'pending',
-      driver_id:null,
-      driver_name:null,
-      driver_phone:null,
-      created_at:new Date().toISOString()
+      ...newOrderForm, status:'pending', driver_id:null, driver_name:null,
+      driver_phone:null, created_at:new Date().toISOString()
     }]).select()
     if (error) alert('Failed to create order: ' + error.message)
     else {
@@ -1327,10 +1389,7 @@ function Dashboard() {
     }
   }
 
-  const handleSaveSettings = () => {
-    localStorage.setItem('chariot_settings', JSON.stringify(settingsForm))
-    alert('✓ Settings saved successfully!')
-  }
+  const handleSaveSettings = () => { localStorage.setItem('chariot_settings', JSON.stringify(settingsForm)); alert('✓ Settings saved successfully!') }
 
   const handleSaveProfile = () => {
     const updated = { ...admin, full_name:adminProfile.full_name, email:adminProfile.email }
@@ -1403,7 +1462,6 @@ function Dashboard() {
     return timeCutoffMs==null || tsMs>=timeCutoffMs
   }
 
-  // FIX #2: Include 'cancelled' in the activeTab filter logic
   const filteredOrders = orders.filter(o => {
     if (!passesTimeFilter(o.created_at)) return false
     const q = searchQuery.toLowerCase()
@@ -1413,7 +1471,6 @@ function Dashboard() {
     if (activeTab === 'pending') return o.status === 'pending'
     if (activeTab === 'delivered') return o.status === 'delivered'
     if (activeTab === 'cancelled') return o.status === 'cancelled'
-    // 'orders' tab — show everything
     return true
   })
 
@@ -1452,46 +1509,38 @@ function Dashboard() {
   const completedOrdersCount = orders.filter(o => o.status==='delivered').length
   const cancelledOrdersCount = orders.filter(o => o.status==='cancelled').length
   const activeOrdersCount = orders.filter(o => o.status==='assigned'||o.status==='picked_up').length
-
   const totalRevenue = orders.filter(o=>o.status==='delivered').reduce((s,o)=>s+Number(o.price||0),0)
   const todayRevenue = orders.filter(o=>{const t=new Date(o.created_at).toDateString()===new Date().toDateString();return t&&o.status==='delivered'}).reduce((s,o)=>s+Number(o.price||0),0)
   const avgOrderValue = completedOrdersCount>0 ? totalRevenue/completedOrdersCount : 0
   const completionRate = orders.length>0 ? ((completedOrdersCount/orders.length)*100).toFixed(1) : 0
 
-  // Shared props for OrdersView
   const ordersViewProps = {
-    searchQuery, setSearchQuery,
-    timeFilter, setTimeFilter,
-    lastXHours, setLastXHours,
-    orderTypeFilter, setOrderTypeFilter,
-    activeTab, setActiveTab,
-    displayItems,
-    orders, drivers,
+    searchQuery, setSearchQuery, timeFilter, setTimeFilter,
+    lastXHours, setLastXHours, orderTypeFilter, setOrderTypeFilter,
+    activeTab, setActiveTab, displayItems, orders, drivers,
     singleOrdersCount, bulkOrdersCount, appOrdersCount,
     merchantOrdersCount, pendingOrdersCount, completedOrdersCount, cancelledOrdersCount,
-    loading,
-    assignDriver, assignDriverToBatch,
-    openImagePreview, openMapTracking, handleCancelOrder,
-    admin,
+    loading, assignDriver, assignDriverToBatch,
+    openImagePreview, openMapTracking, handleCancelOrder, admin,
   }
 
   if (!admin) return null
 
+  const viewTitle = {
+    dashboard:'Dashboard Overview', orders:'All Orders', app:'App Orders',
+    merchant_orders:'Merchant Orders', track:'Track Deliveries', drivers:'Manage Drivers',
+    leaderboard:'Driver Leaderboard', merchants:'Manage Merchants',
+    reports:'Reports & Analytics', settings:'Settings', profile:'My Profile'
+  }
+
   return (
-    <div className="adm-root" style={{ minHeight:'100vh', background:'#f8fafc', display:'flex', flexDirection:'row' }}>
+    <div className="adm-root" style={{ minHeight:'100vh', background:'#f8fafc', display:'flex' }}>
       <style>{PREMIUM_STYLES}</style>
 
+      {/* ── MODALS ── */}
       {statFilterType && (
-        <StatFilterModal
-          filterType={statFilterType}
-          orders={orders}
-          drivers={drivers}
-          merchants={merchants}
-          onClose={() => setStatFilterType(null)}
-          onTrack={openMapTracking}
-          admin={admin}
-          downloadAdminOrderFn={downloadAdminOrder}
-        />
+        <StatFilterModal filterType={statFilterType} orders={orders} drivers={drivers} merchants={merchants}
+          onClose={() => setStatFilterType(null)} onTrack={openMapTracking} admin={admin} downloadAdminOrderFn={downloadAdminOrder}/>
       )}
 
       {showCreateOrderModal && (
@@ -1505,10 +1554,10 @@ function Dashboard() {
                   <p style={{ fontSize:11, color:'#94a3b8' }}>Order will be created as Pending — assign a rider afterwards</p>
                 </div>
               </div>
-              <button onClick={() => setShowCreateOrderModal(false)} className="p-2 rounded-lg hover:bg-white transition-all"><X className="w-5 h-5"/></button>
+              <button onClick={() => setShowCreateOrderModal(false)} style={{ background:'none', border:'none', cursor:'pointer', padding:8 }}><X className="w-5 h-5"/></button>
             </div>
-            <div className="p-6 max-h-[70vh] overflow-y-auto">
-              <div className="space-y-4">
+            <div className="p-6" style={{ maxHeight:'70vh', overflowY:'auto' }}>
+              <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-2 uppercase">Merchant <span className="text-red-500">*</span></label>
                   <select value={newOrderForm.merchant_id} onChange={e=>setNewOrderForm({...newOrderForm, merchant_id:e.target.value})} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -1551,22 +1600,22 @@ function Dashboard() {
       {showMapModal && (
         <div className="modal-overlay">
           <div className="modal-card" style={{ maxWidth:900 }}>
-            <div className="flex items-center justify-between px-5 py-4 border-b">
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ flexWrap:'wrap', gap:8 }}>
               <div className="flex items-center gap-2">
                 <Navigation className="w-5 h-5 text-blue-600"/>
-                <div className="text-left">
+                <div>
                   <p className="text-sm font-bold text-gray-900 uppercase">{mapMeta?.orderId ? `Track Order #${mapMeta.orderId}` : 'Track Delivery'}</p>
                   <p className="text-[10px] uppercase text-gray-400">{mapMeta?.title||'Pickup → Dropoff'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {mapOpenUrl && <a href={mapOpenUrl} target="_blank" rel="noreferrer" className="text-[10px] uppercase font-bold text-blue-600 bg-blue-50 border border-blue-100 px-3 py-2 rounded-lg hover:bg-blue-100">Open in Maps</a>}
-                <button onClick={closeMapTracking} className="p-2 rounded-lg hover:bg-gray-100 transition-all"><X className="w-5 h-5 text-gray-700"/></button>
+                <button onClick={closeMapTracking} className="p-2 rounded-lg hover:bg-gray-100"><X className="w-5 h-5 text-gray-700"/></button>
               </div>
             </div>
             <div className="p-4 bg-gray-50">
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <iframe title="Tracking Map" src={mapEmbedUrl} className="w-full h-[70vh]" style={{ border:0 }} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/>
+                <iframe title="Tracking Map" src={mapEmbedUrl} className="w-full" style={{ height:'60vh', border:0 }} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/>
               </div>
               <div className="mt-3 flex items-center justify-between">
                 <p className="text-[10px] text-gray-500 font-semibold">Tip: Press <span className="font-black">Esc</span> to close</p>
@@ -1583,16 +1632,16 @@ function Dashboard() {
             <div className="flex items-center justify-between px-5 py-4 border-b">
               <div className="flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-blue-600"/>
-                <div className="text-left">
+                <div>
                   <p className="text-sm font-bold text-gray-900 uppercase">{previewMeta?.orderId ? `Order #${previewMeta.orderId}` : 'Order Image'}</p>
                   <p className="text-[10px] uppercase text-gray-400">{previewMeta?.label||'Item / Parcel'}</p>
                 </div>
               </div>
-              <button onClick={closeImagePreview} className="p-2 rounded-lg hover:bg-gray-100 transition-all"><X className="w-5 h-5 text-gray-700"/></button>
+              <button onClick={closeImagePreview} className="p-2 rounded-lg hover:bg-gray-100"><X className="w-5 h-5 text-gray-700"/></button>
             </div>
             <div className="p-4 bg-gray-50">
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <img src={previewImageUrl} alt="Item" className="w-full max-h-[70vh] object-contain bg-white"/>
+                <img src={previewImageUrl} alt="Item" className="w-full object-contain bg-white" style={{ maxHeight:'70vh' }}/>
               </div>
               <div className="mt-3 flex items-center justify-between">
                 <p className="text-[10px] text-gray-500 font-semibold">Tip: Press <span className="font-black">Esc</span> to close</p>
@@ -1633,8 +1682,17 @@ function Dashboard() {
         </div>
       )}
 
+      {/* ═══════════ MOBILE OVERLAY ═══════════ */}
+      {sidebarOpen && (
+        <div
+          className="sb-overlay sb-overlay-open"
+          onClick={handleOverlayClick}
+          style={{ display:'block', position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:49, backdropFilter:'blur(3px)' }}
+        />
+      )}
+
       {/* ═══════════ SIDEBAR ═══════════ */}
-      <aside className="sb-shell flex flex-col" style={{ position:'fixed', top:0, left:0, bottom:0, width:252, zIndex:50 }}>
+      <aside className={`sb-shell${sidebarOpen ? ' sb-open' : ''}`}>
         <div className="sb-logo-area">
           <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:10 }}>
             <div className="sb-logo-icon"><Package size={20} style={{ color:'#fff' }}/></div>
@@ -1664,31 +1722,30 @@ function Dashboard() {
 
         <nav style={{ flex:1, padding:'8px 10px', overflowY:'auto', scrollbarWidth:'none' }}>
           <p className="sb-section-lbl">Overview</p>
-          <SidebarItem icon={<LayoutDashboard size={16}/>} label="Dashboard" sub="Overview & stats" active={activeView==='dashboard'} onClick={()=>{setActiveView('dashboard');setSidebarOpen(false)}}/>
+          <SidebarItem icon={<LayoutDashboard size={16}/>} label="Dashboard" sub="Overview & stats" active={activeView==='dashboard'} onClick={()=>navigate('dashboard')}/>
 
           <p className="sb-section-lbl">Orders</p>
-          <SidebarItem icon={<List size={16}/>} label="All Orders" active={activeView==='orders'} onClick={()=>{setActiveView('orders');setActiveTab('orders');setSidebarOpen(false)}} badge={orders.length}/>
-          <SidebarItem icon={<Smartphone size={16}/>} label="App Orders" active={activeView==='app'} onClick={()=>{setActiveView('app');setActiveTab('app');setSidebarOpen(false)}} badge={appOrdersCount}/>
-          <SidebarItem icon={<Store size={16}/>} label="Merchant Orders" active={activeView==='merchant_orders'} onClick={()=>{setActiveView('merchant_orders');setActiveTab('merchant_orders');setSidebarOpen(false)}} badge={merchantOrdersCount}/>
-          <SidebarItem icon={<Clock size={16}/>} label="Pending" sub="Awaiting assignment" active={activeView==='pending_view'} onClick={()=>{setActiveView('orders');setActiveTab('pending');setSidebarOpen(false)}} badge={pendingOrdersCount}/>
-          {/* Added cancelled to sidebar too */}
-          <SidebarItem icon={<XCircle size={16}/>} label="Cancelled" active={activeView==='cancelled_view'} onClick={()=>{setActiveView('orders');setActiveTab('cancelled');setSidebarOpen(false)}} badge={cancelledOrdersCount}/>
+          <SidebarItem icon={<List size={16}/>} label="All Orders" active={activeView==='orders'} onClick={()=>navigate('orders',{tab:'orders'})} badge={orders.length}/>
+          <SidebarItem icon={<Smartphone size={16}/>} label="App Orders" active={activeView==='app'} onClick={()=>navigate('app',{tab:'app'})} badge={appOrdersCount}/>
+          <SidebarItem icon={<Store size={16}/>} label="Merchant Orders" active={activeView==='merchant_orders'} onClick={()=>navigate('merchant_orders',{tab:'merchant_orders'})} badge={merchantOrdersCount}/>
+          <SidebarItem icon={<Clock size={16}/>} label="Pending" sub="Awaiting assignment" active={activeView==='pending_view'} onClick={()=>navigate('orders',{tab:'pending'})} badge={pendingOrdersCount}/>
+          <SidebarItem icon={<XCircle size={16}/>} label="Cancelled" active={activeView==='cancelled_view'} onClick={()=>navigate('orders',{tab:'cancelled'})} badge={cancelledOrdersCount}/>
 
           <p className="sb-section-lbl">Management</p>
-          <SidebarItem icon={<Map size={16}/>} label="Track Deliveries" sub="Live GPS tracking" active={activeView==='track'} onClick={()=>{setActiveView('track');setSidebarOpen(false)}}/>
-          <SidebarItem icon={<Truck size={16}/>} label="Manage Drivers" active={activeView==='drivers'} onClick={()=>{setActiveView('drivers');setDriversTab('list');setSidebarOpen(false)}} badge={drivers.length}/>
-          <SidebarItem icon={<Trophy size={16}/>} label="Leaderboard" sub="Driver rankings" active={activeView==='leaderboard'} onClick={()=>{setActiveView('leaderboard');setSidebarOpen(false)}}/>
-          <SidebarItem icon={<Users size={16}/>} label="Merchants" active={activeView==='merchants'} onClick={()=>{setActiveView('merchants');setSidebarOpen(false)}} badge={merchants.length}/>
+          <SidebarItem icon={<Map size={16}/>} label="Track Deliveries" sub="Live GPS tracking" active={activeView==='track'} onClick={()=>navigate('track')}/>
+          <SidebarItem icon={<Truck size={16}/>} label="Manage Drivers" active={activeView==='drivers'} onClick={()=>navigate('drivers',{driversTab:'list'})} badge={drivers.length}/>
+          <SidebarItem icon={<Trophy size={16}/>} label="Leaderboard" sub="Driver rankings" active={activeView==='leaderboard'} onClick={()=>navigate('leaderboard')}/>
+          <SidebarItem icon={<Users size={16}/>} label="Merchants" active={activeView==='merchants'} onClick={()=>navigate('merchants')} badge={merchants.length}/>
 
           <p className="sb-section-lbl">Analytics</p>
-          <SidebarItem icon={<BarChart3 size={16}/>} label="Reports" sub="Revenue & metrics" active={activeView==='reports'} onClick={()=>{setActiveView('reports');setSidebarOpen(false)}}/>
+          <SidebarItem icon={<BarChart3 size={16}/>} label="Reports" sub="Revenue & metrics" active={activeView==='reports'} onClick={()=>navigate('reports')}/>
 
           <div className="sb-divider" style={{ margin:'8px 4px' }}/>
-          <SidebarItem icon={<UserCog size={16}/>} label="My Profile" active={activeView==='profile'} onClick={()=>{setActiveView('profile');setSidebarOpen(false)}}/>
-          <SidebarItem icon={<Settings size={16}/>} label="Settings" active={activeView==='settings'} onClick={()=>{setActiveView('settings');setSidebarOpen(false)}}/>
+          <SidebarItem icon={<UserCog size={16}/>} label="My Profile" active={activeView==='profile'} onClick={()=>navigate('profile')}/>
+          <SidebarItem icon={<Settings size={16}/>} label="Settings" active={activeView==='settings'} onClick={()=>navigate('settings')}/>
         </nav>
 
-        <div style={{ padding:'12px 14px', borderTop:'1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ padding:'12px 14px', borderTop:'1px solid rgba(255,255,255,0.08)', flexShrink:0 }}>
           <div className="sb-profile-card">
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
               <div style={{ position:'relative', flexShrink:0 }}>
@@ -1701,7 +1758,7 @@ function Dashboard() {
                 <p style={{ fontSize:12, fontWeight:700, color:'#e2e8f0', overflow:'hidden', whiteSpace:'nowrap', textOverflow:'ellipsis' }}>{adminProfile.full_name}</p>
                 <p style={{ fontSize:9.5, color:'rgba(148,163,184,0.55)', fontFamily:'var(--mono)', letterSpacing:'0.08em' }}>SUPER USER</p>
               </div>
-              <div style={{ background:'rgba(16,185,129,0.14)', border:'1px solid rgba(16,185,129,0.24)', borderRadius:6, padding:'2px 7px' }}>
+              <div style={{ background:'rgba(16,185,129,0.14)', border:'1px solid rgba(16,185,129,0.24)', borderRadius:6, padding:'2px 7px', flexShrink:0 }}>
                 <span style={{ fontSize:8, fontWeight:700, color:'#10b981', letterSpacing:'0.12em', fontFamily:'var(--mono)' }}>ACTIVE</span>
               </div>
             </div>
@@ -1719,31 +1776,32 @@ function Dashboard() {
       </aside>
 
       {/* ═══════════ MAIN CONTENT ═══════════ */}
-      <div style={{ flex:1, marginLeft:252, minWidth:0 }}>
+      <div className="adm-main">
+        {/* ── TOPBAR ── */}
         <header className="adm-topbar sticky top-0 z-40">
-          <div className="px-6 py-4 flex items-center justify-between">
-            <div>
-              <h1 style={{ fontSize:17, fontWeight:800, color:'#0f172a', letterSpacing:'-0.01em' }}>
-                {activeView==='dashboard'&&'Dashboard Overview'}
-                {activeView==='orders'&&'All Orders'}
-                {activeView==='app'&&'App Orders'}
-                {activeView==='merchant_orders'&&'Merchant Orders'}
-                {activeView==='track'&&'Track Deliveries'}
-                {activeView==='drivers'&&'Manage Drivers'}
-                {activeView==='leaderboard'&&'Driver Leaderboard'}
-                {activeView==='merchants'&&'Manage Merchants'}
-                {activeView==='reports'&&'Reports & Analytics'}
-                {activeView==='settings'&&'Settings'}
-                {activeView==='profile'&&'My Profile'}
-              </h1>
-              <p style={{ fontSize:11, color:'#94a3b8', fontFamily:'var(--mono)', letterSpacing:'0.06em' }}>
-                {currentTime.toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
-              </p>
+          <div className="adm-topbar-inner" style={{ padding:'12px 20px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:10 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, minWidth:0 }}>
+              {/* Hamburger — mobile only */}
+              <button
+                className="adm-hamburger"
+                onClick={() => setSidebarOpen(s => !s)}
+                aria-label="Toggle menu"
+              >
+                <Menu size={18}/>
+              </button>
+              <div style={{ minWidth:0 }}>
+                <h1 className="adm-topbar-title" style={{ fontSize:17, fontWeight:800, color:'#0f172a', letterSpacing:'-0.01em', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                  {viewTitle[activeView] || 'Dashboard'}
+                </h1>
+                <p className="adm-topbar-date" style={{ fontSize:11, color:'#94a3b8', fontFamily:'var(--mono)', letterSpacing:'0.06em' }}>
+                  {currentTime.toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
               {(activeView==='merchants'||activeView==='dashboard'||activeView==='orders') && (
-                <button onClick={()=>setShowCreateOrderModal(true)} style={{ display:'flex', alignItems:'center', gap:6, background:'linear-gradient(135deg,#2563eb,#1d4ed8)', border:'none', borderRadius:10, padding:'9px 16px', fontSize:12, fontWeight:700, color:'#fff', cursor:'pointer', letterSpacing:'0.05em', textTransform:'uppercase', fontFamily:'var(--font)', boxShadow:'0 2px 8px rgba(37,99,235,0.35)' }}>
-                  <Plus size={14}/> Create Order
+                <button onClick={()=>setShowCreateOrderModal(true)} style={{ display:'flex', alignItems:'center', gap:6, background:'linear-gradient(135deg,#2563eb,#1d4ed8)', border:'none', borderRadius:10, padding:'9px 14px', fontSize:12, fontWeight:700, color:'#fff', cursor:'pointer', letterSpacing:'0.05em', textTransform:'uppercase', fontFamily:'var(--font)', boxShadow:'0 2px 8px rgba(37,99,235,0.35)', whiteSpace:'nowrap' }}>
+                  <Plus size={14}/><span className="adm-topbar-create-label"> Create Order</span>
                 </button>
               )}
               <button onClick={loadData} style={{ background:'#f8fafc', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'8px 10px', cursor:'pointer', display:'flex', alignItems:'center', color:'#64748b' }} title="Refresh">
@@ -1761,7 +1819,7 @@ function Dashboard() {
                       <p style={{ fontSize:12, fontWeight:800, color:'#0f172a' }}>Activity Notifications</p>
                       {notifications.length>0 && <button onClick={clearAllNotifications} style={{ fontSize:11, color:'#2563eb', background:'none', border:'none', cursor:'pointer', fontWeight:600 }}>Clear All</button>}
                     </div>
-                    <div style={{ maxHeight:380, overflowY:'auto' }}>
+                    <div style={{ maxHeight:340, overflowY:'auto' }}>
                       {notifications.length>0 ? notifications.map(notif => (
                         <div key={notif.id} onClick={()=>handleNotificationClick(notif.order.id)}
                           style={{ padding:'12px 18px', borderBottom:'1px solid #f8fafc', cursor:'pointer', background:notif.read?'#fff':'#f8faff' }}
@@ -1791,19 +1849,20 @@ function Dashboard() {
           </div>
         </header>
 
-        <main className="p-6">
+        {/* ── MAIN CONTENT ── */}
+        <main className="adm-main-pad" style={{ padding:24 }}>
 
           {/* ── DASHBOARD ── */}
           {activeView==='dashboard' && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 text-left">
+              <div className="stat-grid" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16, marginBottom:24, textAlign:'left' }}>
                 <StatBox title="All Orders" value={orders.length} color="blue" icon={<Package/>} sub={`${bulkOrdersCount} bulk · ${singleOrdersCount} single`} trend="+12%" trendUp={true} onClick={()=>setStatFilterType('all')} selected={statFilterType==='all'}/>
                 <StatBox title="Pending" value={pendingOrdersCount} color="yellow" icon={<Clock/>} sub="Awaiting assignment" onClick={()=>setStatFilterType('pending')} selected={statFilterType==='pending'}/>
                 <StatBox title="Delivered" value={completedOrdersCount} color="green" icon={<CheckCircle/>} sub={`${completionRate}% completion rate`} trend="+8%" trendUp={true} onClick={()=>setStatFilterType('delivered')} selected={statFilterType==='delivered'}/>
                 <StatBox title="Cancelled" value={cancelledOrdersCount} color="red" icon={<XCircle/>} sub={`${orders.length>0?((cancelledOrdersCount/orders.length)*100).toFixed(1):0}% of total`} onClick={()=>setStatFilterType('cancelled')} selected={statFilterType==='cancelled'}/>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 text-left">
+              <div className="stat-grid" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16, marginBottom:24, textAlign:'left' }}>
                 <StatBox title="Active Deliveries" value={activeOrdersCount} color="cyan" icon={<Truck/>} sub="Assigned / In Transit" onClick={()=>setStatFilterType('assigned')} selected={statFilterType==='assigned'}/>
                 <StatBox title="App Orders" value={appOrdersCount} color="indigo" icon={<Smartphone/>} sub="From rider app" onClick={()=>setStatFilterType('app')} selected={statFilterType==='app'}/>
                 <StatBox title="Merchant Orders" value={merchantOrdersCount} color="purple" icon={<Store/>} sub="From merchants" onClick={()=>setStatFilterType('merchant')} selected={statFilterType==='merchant'}/>
@@ -1821,24 +1880,24 @@ function Dashboard() {
 
           {/* ── TRACK DELIVERIES ── */}
           {activeView==='track' && (
-            <div className="space-y-6">
+            <div style={{ display:'flex', flexDirection:'column', gap:24 }}>
               <div className="bg-green-50 border border-green-200 rounded-xl p-6 flex items-center gap-4">
-                <Map className="w-10 h-10 text-green-600"/>
+                <Map className="w-10 h-10 text-green-600" style={{ flexShrink:0 }}/>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">Track Active Deliveries</h3>
                   <p className="text-sm text-gray-600">Monitor ongoing orders with GPS coordinates</p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="stat-grid" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16 }}>
                 <StatBox title="Active Deliveries" value={activeOrdersCount} color="blue" icon={<Truck/>} onClick={()=>setStatFilterType('assigned')} selected={statFilterType==='assigned'}/>
                 <StatBox title="Available Riders" value={drivers.filter(d=>d.is_verified).length} color="green" icon={<Users/>}/>
                 <StatBox title="Awaiting Assignment" value={pendingOrdersCount} color="yellow" icon={<Clock/>} onClick={()=>setStatFilterType('pending')} selected={statFilterType==='pending'}/>
               </div>
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Active Orders with Tracking</h3>
-                <div className="space-y-3">
+                <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
                   {orders.filter(o=>(o.status==='assigned'||o.status==='picked_up')&&hasValidCoords(o)).map(order => (
-                    <div key={order.id} className="p-4 bg-green-50 rounded-lg border border-green-200 flex items-center justify-between">
+                    <div key={order.id} className="p-4 bg-green-50 rounded-lg border border-green-200 flex items-center justify-between" style={{ flexWrap:'wrap', gap:10 }}>
                       <div>
                         <p className="font-bold text-gray-900">Order #{order.id}</p>
                         <p className="text-xs text-gray-600">Rider: {order.driver_name||'Unassigned'}</p>
@@ -1859,7 +1918,7 @@ function Dashboard() {
 
           {/* ── DRIVERS ── */}
           {activeView==='drivers' && (
-            <div className="space-y-4">
+            <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
               <div className="tab-pill-bar">
                 <TabButton active={driversTab==='list'} onClick={()=>setDriversTab('list')} count={drivers.length} icon={<List size={13}/>}>Driver List</TabButton>
                 <TabButton active={driversTab==='leaderboard'} onClick={()=>setDriversTab('leaderboard')} count={drivers.length} icon={<Trophy size={13}/>}>Leaderboard</TabButton>
@@ -1870,13 +1929,12 @@ function Dashboard() {
           )}
 
           {activeView==='leaderboard' && <DriverLeaderboard drivers={drivers} orders={orders}/>}
-
           {activeView==='merchants' && <MerchantsTable merchants={merchants} orders={orders} onToggleMerchant={handleToggleMerchant}/>}
 
           {/* ── REPORTS ── */}
           {activeView==='reports' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div style={{ display:'flex', flexDirection:'column', gap:24 }}>
+              <div className="stat-grid" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16 }}>
                 {[
                   { label:'Total Revenue', val:`GH₵ ${totalRevenue.toFixed(2)}`, icon:<DollarSign/>, color:'#059669', bg:'#ecfdf5', trend:'+12%' },
                   { label:"Today's Revenue", val:`GH₵ ${todayRevenue.toFixed(2)}`, icon:<Activity/>, color:'#2563eb', bg:'#eff6ff', trend:'+8%' },
@@ -1896,7 +1954,7 @@ function Dashboard() {
 
               <div className="kpi-card">
                 <h3 style={{ fontSize:15, fontWeight:800, color:'#0f172a', marginBottom:16 }}>Payment Methods Breakdown</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="stat-grid" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12 }}>
                   {PAYMENT_METHODS.map(pm => {
                     const pmOrders = orders.filter(o => o.payment_method===pm.value && o.status==='delivered')
                     const pmRevenue = pmOrders.reduce((s,o)=>s+Number(o.price||0),0)
@@ -1911,19 +1969,19 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="responsive-2col" style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:24 }}>
                 <div className="kpi-card">
                   <h3 style={{ fontSize:15, fontWeight:800, color:'#0f172a', marginBottom:16 }}>Order Status Distribution</h3>
                   {[
-                    { label:'Pending', count:pendingOrdersCount, color:'#f59e0b', bg:'#fffbeb' },
-                    { label:'Active (Assigned/Picked Up)', count:activeOrdersCount, color:'#0891b2', bg:'#ecfeff' },
-                    { label:'Delivered', count:completedOrdersCount, color:'#059669', bg:'#ecfdf5' },
-                    { label:'Cancelled', count:cancelledOrdersCount, color:'#9ca3af', bg:'#f8fafc' },
+                    { label:'Pending', count:pendingOrdersCount, color:'#f59e0b' },
+                    { label:'Active (Assigned/Picked Up)', count:activeOrdersCount, color:'#0891b2' },
+                    { label:'Delivered', count:completedOrdersCount, color:'#059669' },
+                    { label:'Cancelled', count:cancelledOrdersCount, color:'#9ca3af' },
                   ].map(s => (
                     <div key={s.label} style={{ marginBottom:12 }}>
                       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
                         <span style={{ fontSize:12, color:'#374151', fontWeight:600 }}>{s.label}</span>
-                        <span style={{ fontSize:12, fontWeight:800, color:s.color }}>{s.count} orders ({orders.length>0?(s.count/orders.length*100).toFixed(1):0}%)</span>
+                        <span style={{ fontSize:12, fontWeight:800, color:s.color }}>{s.count} ({orders.length>0?(s.count/orders.length*100).toFixed(1):0}%)</span>
                       </div>
                       <div className="prog-bar"><div className="prog-fill" style={{ width:`${orders.length>0?(s.count/orders.length)*100:0}%`, background:s.color }}/></div>
                     </div>
@@ -1950,7 +2008,7 @@ function Dashboard() {
               </div>
 
               <div className="kpi-card">
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16, flexWrap:'wrap', gap:8 }}>
                   <h3 style={{ fontSize:15, fontWeight:800, color:'#0f172a' }}>🏆 Top 5 Drivers</h3>
                   <button onClick={()=>setActiveView('leaderboard')} style={{ fontSize:11, fontWeight:700, color:'#2563eb', background:'#eff6ff', border:'1px solid #bfdbfe', borderRadius:8, padding:'6px 12px', cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>
                     <Trophy size={12}/> Full Leaderboard
@@ -1958,11 +2016,11 @@ function Dashboard() {
                 </div>
                 {drivers.map(d=>({...d,delivered:orders.filter(o=>o.driver_id===d.id&&o.status==='delivered').length}))
                   .sort((a,b)=>b.delivered-a.delivered).slice(0,5).map((d,i) => (
-                  <div key={d.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 0', borderBottom:'1px solid #f1f5f9' }}>
+                  <div key={d.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 0', borderBottom:'1px solid #f1f5f9', flexWrap:'wrap' }}>
                     <div style={{ width:28, height:28, borderRadius:'50%', background:i===0?'linear-gradient(135deg,#f59e0b,#d97706)':i===1?'linear-gradient(135deg,#94a3b8,#64748b)':i===2?'linear-gradient(135deg,#cd7c3e,#b45309)':'#f1f5f9', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                       <span style={{ fontSize:11, fontWeight:800, color:i<3?'#fff':'#64748b' }}>#{i+1}</span>
                     </div>
-                    <div style={{ flex:1 }}>
+                    <div style={{ flex:1, minWidth:120 }}>
                       <p style={{ fontSize:13, fontWeight:700, color:'#0f172a' }}>{d.full_name}</p>
                       <p style={{ fontSize:10, color:'#94a3b8', fontFamily:'var(--mono)' }}>{d.phone_number}</p>
                     </div>
@@ -1975,21 +2033,21 @@ function Dashboard() {
 
           {/* ── PROFILE ── */}
           {activeView==='profile' && (
-            <div className="max-w-2xl mx-auto space-y-6">
+            <div style={{ maxWidth:640, margin:'0 auto', display:'flex', flexDirection:'column', gap:16 }}>
               <div className="settings-card">
                 <div style={{ padding:'16px 20px', borderBottom:'1px solid #f1f5f9', background:'linear-gradient(135deg,#f8fafc,#f1f5f9)', display:'flex', alignItems:'center', gap:10 }}>
                   <div style={{ background:'#eff6ff', borderRadius:8, padding:8, display:'flex' }}><UserCog size={16} style={{ color:'#2563eb' }}/></div>
                   <p style={{ fontSize:13, fontWeight:700, color:'#1e293b' }}>Profile Photo</p>
                 </div>
                 <div style={{ padding:24 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:20 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:20, flexWrap:'wrap' }}>
                     <div style={{ width:80, height:80, borderRadius:'50%', background:'linear-gradient(135deg,#1d4ed8,#0891b2)', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', overflow:'hidden', boxShadow:'0 4px 16px rgba(37,99,235,0.3)', flexShrink:0 }}>
                       {adminProfile.avatar_url ? <img src={adminProfile.avatar_url} alt="avatar" style={{ width:'100%', height:'100%', objectFit:'cover' }}/> : <Shield size={32} style={{ color:'#fff' }}/>}
                     </div>
                     <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                       <p style={{ fontSize:13, fontWeight:700, color:'#0f172a' }}>{adminProfile.full_name}</p>
                       <p style={{ fontSize:11, color:'#94a3b8' }}>Upload a profile photo (max 5MB)</p>
-                      <div style={{ display:'flex', gap:8 }}>
+                      <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
                         <button onClick={()=>profilePicRef.current?.click()} style={{ display:'flex', alignItems:'center', gap:6, background:'linear-gradient(135deg,#2563eb,#1d4ed8)', border:'none', borderRadius:8, padding:'8px 14px', fontSize:11, fontWeight:700, color:'#fff', cursor:'pointer' }}>
                           <Upload size={12}/> Upload Photo
                         </button>
@@ -2019,7 +2077,7 @@ function Dashboard() {
                     <label style={{ display:'block', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', color:'#64748b', fontFamily:'var(--mono)', marginBottom:6 }}>Email Address</label>
                     <input type="email" value={adminProfile.email} onChange={e=>setAdminProfile(p=>({...p,email:e.target.value}))} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
                   </div>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:10 }}>
                     <button onClick={()=>setShowChangePassword(true)} style={{ display:'flex', alignItems:'center', gap:6, background:'#f8fafc', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'10px 16px', fontSize:12, fontWeight:700, color:'#475569', cursor:'pointer' }}>
                       <Key size={13}/> Change Password
                     </button>
@@ -2056,15 +2114,15 @@ function Dashboard() {
 
           {/* ── SETTINGS ── */}
           {activeView==='settings' && (
-            <div className="max-w-4xl mx-auto">
-              <div className="tab-pill-bar mb-6">
+            <div style={{ maxWidth:900, margin:'0 auto' }}>
+              <div className="tab-pill-bar mb-6" style={{ marginBottom:24 }}>
                 {[
                   {key:'general',label:'General',icon:<Settings size={12}/>},
                   {key:'payments',label:'Payments',icon:<CreditCard size={12}/>},
-                  {key:'notifications',label:'Notifications',icon:<Bell size={12}/>},
-                  {key:'operations',label:'Operations',icon:<Zap size={12}/>},
+                  {key:'notifications',label:'Alerts',icon:<Bell size={12}/>},
+                  {key:'operations',label:'Ops',icon:<Zap size={12}/>},
                   {key:'security',label:'Security',icon:<Lock size={12}/>},
-                  {key:'appearance',label:'Appearance',icon:<Palette size={12}/>},
+                  {key:'appearance',label:'Display',icon:<Palette size={12}/>},
                   {key:'advanced',label:'Advanced',icon:<Database size={12}/>},
                 ].map(t => (
                   <button key={t.key} onClick={()=>setSettingsTab(t.key)} className={`tab-pill${settingsTab===t.key?' active':''}`}>
@@ -2074,7 +2132,7 @@ function Dashboard() {
               </div>
 
               {settingsTab==='general' && (
-                <div className="space-y-4">
+                <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
                   <div className="settings-card">
                     <div style={{ padding:'16px 20px', borderBottom:'1px solid #f1f5f9', background:'linear-gradient(135deg,#f8fafc,#f1f5f9)', display:'flex', alignItems:'center', gap:10 }}>
                       <div style={{ background:'#eff6ff', borderRadius:8, padding:8 }}><Globe size={16} style={{ color:'#2563eb' }}/></div>
@@ -2098,7 +2156,7 @@ function Dashboard() {
                       <div style={{ background:'#eff6ff', borderRadius:8, padding:8 }}><DollarSign size={16} style={{ color:'#2563eb' }}/></div>
                       <p style={{ fontSize:13, fontWeight:700, color:'#1e293b' }}>Pricing & Region</p>
                     </div>
-                    <div style={{ padding:20, display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
+                    <div style={{ padding:20, display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:14 }}>
                       {[
                         {label:'Base Delivery Fee',key:'base_delivery_fee',type:'number'},
                         {label:'Per KM Rate',key:'per_km_rate',type:'number'},
@@ -2137,7 +2195,7 @@ function Dashboard() {
                       {label:'Mobile Money (MoMo)', sub:'Accept MTN, Vodafone, AirtelTigo MoMo', key:'allow_mobile_money'},
                       {label:'Card Payment', sub:'Accept Visa, MasterCard, etc.', key:'allow_card_payment'},
                     ].map(item => (
-                      <div key={item.key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 0', borderBottom:'1px solid #f8fafc' }}>
+                      <div key={item.key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 0', borderBottom:'1px solid #f8fafc', gap:12 }}>
                         <div>
                           <p style={{ fontSize:13, fontWeight:600, color:'#1e293b' }}>{item.label}</p>
                           <p style={{ fontSize:11, color:'#94a3b8', marginTop:2 }}>{item.sub}</p>
@@ -2161,7 +2219,7 @@ function Dashboard() {
                       {label:'Email Notifications',sub:'Send order updates via email',key:'email_notifications'},
                       {label:'SMS Notifications',sub:'Send SMS alerts (carrier charges apply)',key:'sms_notifications'},
                     ].map(item => (
-                      <div key={item.key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 0', borderBottom:'1px solid #f8fafc' }}>
+                      <div key={item.key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 0', borderBottom:'1px solid #f8fafc', gap:12 }}>
                         <div>
                           <p style={{ fontSize:13, fontWeight:600, color:'#1e293b' }}>{item.label}</p>
                           <p style={{ fontSize:11, color:'#94a3b8', marginTop:2 }}>{item.sub}</p>
@@ -2174,7 +2232,7 @@ function Dashboard() {
               )}
 
               {settingsTab==='operations' && (
-                <div className="space-y-4">
+                <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
                   <div className="settings-card">
                     <div style={{ padding:'16px 20px', borderBottom:'1px solid #f1f5f9', background:'linear-gradient(135deg,#f8fafc,#f1f5f9)', display:'flex', alignItems:'center', gap:10 }}>
                       <div style={{ background:'#eff6ff', borderRadius:8, padding:8 }}><Zap size={16} style={{ color:'#2563eb' }}/></div>
@@ -2186,7 +2244,7 @@ function Dashboard() {
                         {label:'Require Delivery Photo Proof',sub:'Riders must upload photo on delivery',key:'require_photo_proof'},
                         {label:'Maintenance Mode',sub:'Temporarily disable new order creation',key:'maintenance_mode'},
                       ].map(item => (
-                        <div key={item.key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 0', borderBottom:'1px solid #f8fafc' }}>
+                        <div key={item.key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 0', borderBottom:'1px solid #f8fafc', gap:12 }}>
                           <div>
                             <p style={{ fontSize:13, fontWeight:600, color:'#1e293b' }}>{item.label}</p>
                             <p style={{ fontSize:11, color:'#94a3b8', marginTop:2 }}>{item.sub}</p>
@@ -2201,7 +2259,7 @@ function Dashboard() {
                       <div style={{ background:'#eff6ff', borderRadius:8, padding:8 }}><Sliders size={16} style={{ color:'#2563eb' }}/></div>
                       <p style={{ fontSize:13, fontWeight:700, color:'#1e293b' }}>Operational Limits</p>
                     </div>
-                    <div style={{ padding:20, display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
+                    <div style={{ padding:20, display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:14 }}>
                       {[
                         {label:'Max Orders Per Rider',key:'max_orders_per_rider',type:'number',placeholder:'10'},
                         {label:'Order Timeout (mins)',key:'order_timeout_minutes',type:'number',placeholder:'30'},
@@ -2217,7 +2275,7 @@ function Dashboard() {
               )}
 
               {settingsTab==='security' && (
-                <div className="space-y-4">
+                <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
                   <div className="settings-card">
                     <div style={{ padding:'16px 20px', borderBottom:'1px solid #f1f5f9', background:'linear-gradient(135deg,#f8fafc,#f1f5f9)', display:'flex', alignItems:'center', gap:10 }}>
                       <div style={{ background:'#eff6ff', borderRadius:8, padding:8 }}><Lock size={16} style={{ color:'#2563eb' }}/></div>
@@ -2228,7 +2286,7 @@ function Dashboard() {
                         {label:'Two-Factor Authentication',sub:'Require 2FA on admin login',key:'two_factor_auth'},
                         {label:'Revenue Visibility',sub:'Show revenue data on public dashboards',key:'show_revenue_publicly'},
                       ].map(item => (
-                        <div key={item.key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 0', borderBottom:'1px solid #f8fafc' }}>
+                        <div key={item.key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 0', borderBottom:'1px solid #f8fafc', gap:12 }}>
                           <div>
                             <p style={{ fontSize:13, fontWeight:600, color:'#1e293b' }}>{item.label}</p>
                             <p style={{ fontSize:11, color:'#94a3b8', marginTop:2 }}>{item.sub}</p>
@@ -2281,7 +2339,7 @@ function Dashboard() {
                       {label:'Compact View',sub:'Show more orders in a smaller layout',key:'compact_view'},
                       {label:'Dark Mode',sub:'Coming soon — switch to dark theme',key:'dark_mode'},
                     ].map(item => (
-                      <div key={item.key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 0', borderBottom:'1px solid #f8fafc' }}>
+                      <div key={item.key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 0', borderBottom:'1px solid #f8fafc', gap:12 }}>
                         <div>
                           <p style={{ fontSize:13, fontWeight:600, color:'#1e293b' }}>{item.label}</p>
                           <p style={{ fontSize:11, color:'#94a3b8', marginTop:2 }}>{item.sub}</p>
@@ -2294,14 +2352,14 @@ function Dashboard() {
               )}
 
               {settingsTab==='advanced' && (
-                <div className="space-y-4">
+                <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
                   <div className="settings-card">
                     <div style={{ padding:'16px 20px', borderBottom:'1px solid #f1f5f9', background:'linear-gradient(135deg,#f8fafc,#f1f5f9)', display:'flex', alignItems:'center', gap:10 }}>
                       <div style={{ background:'#eff6ff', borderRadius:8, padding:8 }}><Database size={16} style={{ color:'#2563eb' }}/></div>
                       <p style={{ fontSize:13, fontWeight:700, color:'#1e293b' }}>Data Management</p>
                     </div>
                     <div style={{ padding:20 }}>
-                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 0', borderBottom:'1px solid #f8fafc' }}>
+                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 0', borderBottom:'1px solid #f8fafc', gap:12 }}>
                         <div>
                           <p style={{ fontSize:13, fontWeight:600, color:'#1e293b' }}>Automatic Backup</p>
                           <p style={{ fontSize:11, color:'#94a3b8', marginTop:2 }}>Enable daily automatic data backup</p>
@@ -2324,8 +2382,8 @@ function Dashboard() {
                       <div style={{ background:'#fee2e2', borderRadius:8, padding:8 }}><AlertTriangle size={16} style={{ color:'#dc2626' }}/></div>
                       <p style={{ fontSize:13, fontWeight:700, color:'#dc2626' }}>Danger Zone</p>
                     </div>
-                    <div style={{ padding:20, display:'flex', flexDirection:'column', gap:12 }}>
-                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'#fef2f2', borderRadius:10, border:'1px solid #fecaca' }}>
+                    <div style={{ padding:20 }}>
+                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'#fef2f2', borderRadius:10, border:'1px solid #fecaca', flexWrap:'wrap', gap:10 }}>
                         <div>
                           <p style={{ fontSize:13, fontWeight:700, color:'#dc2626' }}>Reset All Settings</p>
                           <p style={{ fontSize:11, color:'#ef4444' }}>Restore all settings to default values</p>
@@ -2346,6 +2404,7 @@ function Dashboard() {
               </div>
             </div>
           )}
+
         </main>
       </div>
     </div>
