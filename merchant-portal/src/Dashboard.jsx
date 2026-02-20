@@ -980,6 +980,7 @@ function Dashboard() {
             <p className="text-[9px] font-black text-blue-300 uppercase tracking-widest px-3 pt-4 pb-2">Insights</p>
 
             <SidebarItem icon={<BarChart3 className="w-5 h-5" />} label="Reports" description={`GH₵ ${completedOrdersAll.reduce((s,o)=>s+Number(o.price||0),0).toFixed(0)} total revenue`} active={activeView === 'reports'} onClick={() => navigate('reports')} />
+            <SidebarItem icon={<CreditCard className="w-5 h-5" />} label="Payments" description={`Track transactions`} active={activeView === 'payments'} onClick={() => navigate('payments')} />
             <SidebarItem icon={<Activity className="w-5 h-5" />} label="Performance" description={`${orders.length ? (completedOrdersAll.length/orders.length*100).toFixed(0) : 0}% completion rate`} active={activeView === 'performance'} onClick={() => navigate('performance')} />
 
             <p className="text-[9px] font-black text-blue-300 uppercase tracking-widest px-3 pt-4 pb-2">Actions</p>
@@ -1030,25 +1031,27 @@ function Dashboard() {
       <div className="flex-1 md:ml-64">
         {/* Top Bar */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-          <div className="px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
-                {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+              <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden p-2 hover:bg-gray-100 rounded-lg shrink-0">
+                {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-xl font-bold text-gray-900 truncate">
                   {activeView === 'dashboard' && 'Dashboard'}
                   {activeView === 'orders' && 'All Orders'}
                   {activeView === 'track' && 'Track Deliveries'}
                   {activeView === 'reports' && 'Reports & Analytics'}
+                  {activeView === 'payments' && 'Payment Tracking'}
                   {activeView === 'performance' && 'Performance'}
                   {activeView === 'settings' && 'Settings'}
                 </h1>
-                <p className="text-[10px] text-gray-400 font-bold uppercase hidden sm:block">
+                <p className="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase hidden sm:block">
                   {activeView === 'dashboard' && 'Manage your deliveries'}
                   {activeView === 'orders' && `${orders.length} total orders`}
                   {activeView === 'track' && `${activeOrdersAll.length} active deliveries`}
                   {activeView === 'reports' && 'Business insights & revenue'}
+                  {activeView === 'payments' && 'View all transactions'}
                   {activeView === 'performance' && 'KPIs & metrics'}
                   {activeView === 'settings' && 'Account configuration'}
                 </p>
@@ -1061,9 +1064,9 @@ function Dashboard() {
                   setShowNotifications(!showNotifications)
                   if (!showNotifications) notifications.forEach((notif) => { if (!notif.read) markNotificationAsRead(notif.id) })
                 }}
-                className="relative p-2 hover:bg-gray-100 rounded-full transition-all"
+                className="relative p-2 hover:bg-gray-100 rounded-full transition-all shrink-0"
               >
-                <Bell className={`w-6 h-6 ${unreadCount > 0 ? 'text-blue-600 animate-bounce' : 'text-gray-600'}`} />
+                <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'text-blue-600 animate-bounce' : 'text-gray-600'}`} />
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-black ring-2 ring-white shadow-lg animate-pulse">
                     {unreadCount}
@@ -1106,14 +1109,14 @@ function Dashboard() {
         </header>
 
         {/* Main Content Area */}
-        <main className="p-6">
+        <main className="p-3 sm:p-6">
 
           {/* ═══════════════════════════════════════════════════════
               DASHBOARD VIEW
           ═══════════════════════════════════════════════════════ */}
           {activeView === 'dashboard' && (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 <ClickableStatCard title="My Orders"  value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
                 <ClickableStatCard title="Pending"    value={pendingOrdersAll.length}    color="yellow" icon={<Clock />}       onClick={() => setStatModal('pending')}   sub="Awaiting assignment" />
                 <ClickableStatCard title="Delivered"  value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Successfully completed" />
@@ -1152,13 +1155,13 @@ function Dashboard() {
                 </div>
               )}
 
-              <div className="flex gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row gap-3 mb-6">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by order ID, customer name, address, or batch ID..." className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search orders..." className="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" />
                 </div>
-                <button onClick={() => setShowCreateOrder(true)} className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-all shadow-lg font-bold uppercase text-sm">
-                  <PlusCircle className="w-5 h-5" />Create Order
+                <button onClick={() => setShowCreateOrder(true)} className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl hover:bg-blue-700 transition-all shadow-lg font-bold text-xs uppercase whitespace-nowrap">
+                  <PlusCircle className="w-4 h-4" />Create Order
                 </button>
               </div>
 
@@ -1209,19 +1212,19 @@ function Dashboard() {
           ═══════════════════════════════════════════════════════ */}
           {activeView === 'orders' && (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 <ClickableStatCard title="Total Orders"  value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
                 <ClickableStatCard title="Pending"       value={pendingOrdersAll.length}    color="yellow" icon={<Clock />}       onClick={() => setStatModal('pending')}   sub="Awaiting rider" />
                 <ClickableStatCard title="Delivered"     value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Completed" />
                 <ClickableStatCard title="Cancelled"     value={cancelledOrdersAll.length}  color="red"    icon={<XCircle />}     onClick={() => setStatModal('cancelled')} sub="Click to view" />
               </div>
-              <div className="flex gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row gap-3 mb-6">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by order ID, customer, address…" className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search orders..." className="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" />
                 </div>
-                <button onClick={() => setShowCreateOrder(true)} className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 font-bold uppercase text-sm shadow-lg">
-                  <PlusCircle className="w-5 h-5" />Create Order
+                <button onClick={() => setShowCreateOrder(true)} className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl hover:bg-blue-700 font-bold text-xs uppercase shadow-lg whitespace-nowrap">
+                  <PlusCircle className="w-4 h-4" />Create Order
                 </button>
               </div>
               <div className="bg-white rounded-xl shadow-sm mb-6 flex border-b overflow-x-auto font-bold uppercase">
@@ -1239,7 +1242,7 @@ function Dashboard() {
           ═══════════════════════════════════════════════════════ */}
           {activeView === 'track' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <ClickableStatCard title="Active Deliveries" value={activeOrdersAll.length} color="blue" icon={<Truck />} onClick={() => setStatModal('active')} sub="In progress right now" />
                 <ClickableStatCard title="Awaiting Pickup" value={orders.filter(o => o.status === 'assigned').length} color="yellow" icon={<Clock />} onClick={() => setStatModal('pending')} sub="Assigned, not picked up" />
                 <ClickableStatCard title="Out for Delivery" value={orders.filter(o => o.status === 'picked_up').length} color="indigo" icon={<MapPin />} sub="En route to receiver" />
@@ -1407,7 +1410,7 @@ function Dashboard() {
             const maxCount = Math.max(...last7.map(d => d.count), 1)
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {[
                     { label: 'Total Revenue',    value: `GH₵ ${totalRev.toFixed(2)}`,  sub: 'All time delivered', color: 'green' },
                     { label: "Today's Revenue",  value: `GH₵ ${todayRev.toFixed(2)}`,  sub: `${todayDel.length} orders today`, color: 'blue' },
@@ -1503,6 +1506,153 @@ function Dashboard() {
           })()}
 
           {/* ═══════════════════════════════════════════════════════
+              PAYMENTS VIEW — TRACK TRANSACTIONS & PAYMENT METHODS
+          ═══════════════════════════════════════════════════════ */}
+          {activeView === 'payments' && (() => {
+            const completedOrders = orders.filter(o => o.status === 'delivered')
+            const totalRevenue = completedOrders.reduce((s, o) => s + Number(o.price || 0), 0)
+            const paymentMethods = {}
+            
+            completedOrders.forEach(order => {
+              const method = order.payment_method || 'cash_on_delivery'
+              if (!paymentMethods[method]) {
+                paymentMethods[method] = { method, count: 0, revenue: 0, orders: [] }
+              }
+              paymentMethods[method].count++
+              paymentMethods[method].revenue += Number(order.price || 0)
+              paymentMethods[method].orders.push(order)
+            })
+            
+            const pendingDeliveryRevenue = completedOrders
+              .filter(o => (o.payment_method || 'cash_on_delivery') === 'cash_on_delivery')
+              .reduce((s, o) => s + Number(o.price || 0), 0)
+            const digitalRevenue = totalRevenue - pendingDeliveryRevenue
+            
+            const methodLabels = {
+              cash_on_delivery: { label: '💵 Cash on Delivery', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
+              mobile_money: { label: '📱 Mobile Money', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
+              card: { label: '💳 Card Payment', color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
+              bank_transfer: { label: '🏦 Bank Transfer', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' },
+            }
+            
+            const methodEntries = Object.values(paymentMethods).sort((a, b) => b.revenue - a.revenue)
+            
+            return (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <ClickableStatCard title="Total Revenue" value={`GH₵ ${totalRevenue.toFixed(0)}`} color="green" icon={<DollarSign />} onClick={() => setStatModal('delivered')} sub="From deliveries" />
+                  <ClickableStatCard title="Digital Payments" value={`GH₵ ${digitalRevenue.toFixed(0)}`} color="blue" icon={<Smartphone />} sub={`${completedOrders.filter(o => (o.payment_method || 'cash_on_delivery') !== 'cash_on_delivery').length} orders` || 'Processed'} />
+                  <ClickableStatCard title="Cash Pending" value={`GH₵ ${pendingDeliveryRevenue.toFixed(0)}`} color="yellow" icon={<Banknote />} sub={`${completedOrders.filter(o => (o.payment_method || 'cash_on_delivery') === 'cash_on_delivery').length} orders`} />
+                  <ClickableStatCard title="Avg Order Value" value={`GH₵ ${completedOrders.length ? (totalRevenue / completedOrders.length).toFixed(2) : '0.00'}`} color="indigo" icon={<Percent />} sub="Per delivery" />
+                </div>
+
+                {/* Payment Methods Overview */}
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">Payment Methods</h3>
+                      <p className="text-sm text-gray-500 mt-1">Revenue breakdown by payment method</p>
+                    </div>
+                    <span className="text-xs text-gray-400 font-bold">{methodEntries.length} methods</span>
+                  </div>
+                  <div className="p-6 grid md:grid-cols-2 gap-4">
+                    {methodEntries.map(({ method, count, revenue }) => {
+                      const info = methodLabels[method] || methodLabels.cash_on_delivery
+                      const pct = totalRevenue ? (revenue / totalRevenue * 100).toFixed(0) : 0
+                      return (
+                        <div key={method} className={`${info.bg} ${info.border} border rounded-xl p-5`}>
+                          <div className="flex items-center justify-between mb-3">
+                            <p className={`text-sm font-bold ${info.color}`}>{info.label}</p>
+                            <span className="text-2xl font-black text-gray-800">{count}</span>
+                          </div>
+                          <p className="text-base font-black text-gray-900 mb-1">GH₵ {revenue.toFixed(2)}</p>
+                          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div className={`h-2 ${info.color.replace('text', 'bg')} rounded-full`} style={{ width: `${pct}%` }} />
+                          </div>
+                          <p className="text-xs text-gray-600 mt-2 font-semibold">{pct}% of total revenue</p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Payment Flow */}
+                <div className="bg-gradient-to-r from-green-600 to-emerald-700 rounded-2xl p-6 text-white shadow-lg">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="bg-white/20 p-2.5 rounded-xl"><TrendingUp className="w-6 h-6 text-white" /></div>
+                    <div>
+                      <h3 className="font-black text-lg">Payment Flow Summary</h3>
+                      <p className="text-green-200 text-xs">Completed deliveries only</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white/10 rounded-xl p-4 text-center border border-white/20">
+                      <p className="text-sm font-bold text-green-200 mb-1">Pending Collection</p>
+                      <p className="text-3xl font-black">GH₵ {pendingDeliveryRevenue.toFixed(0)}</p>
+                      <p className="text-[10px] text-green-200 mt-1">Cash on Delivery</p>
+                    </div>
+                    <div className="bg-white/10 rounded-xl p-4 text-center border border-white/20">
+                      <p className="text-sm font-bold text-green-200 mb-1">Already Received</p>
+                      <p className="text-3xl font-black">GH₵ {digitalRevenue.toFixed(0)}</p>
+                      <p className="text-[10px] text-green-200 mt-1">Digital Methods</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Transactions */}
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">Recent Transactions</h3>
+                      <p className="text-sm text-gray-500 mt-1">Latest deliveries with payment details</p>
+                    </div>
+                    <span className="text-xs text-gray-400 font-bold">{completedOrders.length} total</span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs font-bold uppercase">
+                      <thead className="bg-gray-50 text-gray-400 border-b border-gray-100">
+                        <tr>
+                          <th className="px-6 py-3">Order</th>
+                          <th className="px-6 py-3">Customer</th>
+                          <th className="px-6 py-3">Payment Method</th>
+                          <th className="px-6 py-3">Amount</th>
+                          <th className="px-6 py-3">Status</th>
+                          <th className="px-6 py-3">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {completedOrders.slice(0, 10).map(order => {
+                          const method = order.payment_method || 'cash_on_delivery'
+                          const info = methodLabels[method]
+                          return (
+                            <tr key={order.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 text-gray-900">#{order.id}</td>
+                              <td className="px-6 py-4 text-gray-700 normal-case font-semibold">{order.customer_name}</td>
+                              <td className="px-6 py-4">
+                                <span className={`text-[10px] px-2 py-1 rounded-full ${info.bg} ${info.color} font-bold`}>
+                                  {info.label}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-gray-900 font-black">GH₵ {Number(order.price || 0).toFixed(2)}</td>
+                              <td className="px-6 py-4">
+                                <span className="text-[10px] px-2 py-1 rounded-full bg-green-100 text-green-700 font-bold uppercase">Delivered</span>
+                              </td>
+                              <td className="px-6 py-4 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {completedOrders.length === 0 && (
+                    <div className="p-12 text-center text-gray-400 text-sm">No completed orders with payment data yet</div>
+                  )}
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* ═══════════════════════════════════════════════════════
               PERFORMANCE VIEW — NO RIDER LEADERBOARD IN SIDEBAR
           ═══════════════════════════════════════════════════════ */}
           {activeView === 'performance' && (() => {
@@ -1521,7 +1671,7 @@ function Dashboard() {
 
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <ClickableStatCard title="Total Orders"   value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
                   <ClickableStatCard title="Delivered"      value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Completed" />
                   <ClickableStatCard title="Cancelled"      value={cancelledOrdersAll.length}  color="red"    icon={<XCircle />}     onClick={() => setStatModal('cancelled')} sub="Click to review" />
@@ -1978,22 +2128,22 @@ function ClickableStatCard({ title, value, color, icon, onClick, sub, trend, tre
   return (
     <button
       onClick={onClick}
-      className={`group relative bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100 text-left w-full transition-all duration-200 hover:shadow-lg ${c.hover} hover:-translate-y-0.5 focus:outline-none focus:ring-2 ${c.ring} active:scale-95`}
+      className={`group relative bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-6 border border-gray-100 text-left w-full transition-all duration-200 hover:shadow-lg ${c.hover} hover:-translate-y-0.5 focus:outline-none focus:ring-2 ${c.ring} active:scale-95`}
     >
-      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400">
-        <Eye className="w-3.5 h-3.5" />
+      <div className="absolute top-2 right-2 sm:top-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400">
+        <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
       </div>
       <div className="flex items-center justify-between mb-1">
-        <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest pr-5">{title}</p>
-        <div className={`${c.bg} p-3.5 rounded-2xl shadow-lg`}>
-          {React.cloneElement(icon, { className: 'w-5 h-5 text-white' })}
+        <p className="text-gray-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest pr-5 truncate">{title}</p>
+        <div className={`${c.bg} p-2 sm:p-3.5 rounded-lg sm:rounded-2xl shadow-lg shrink-0`}>
+          {React.cloneElement(icon, { className: 'w-4 h-4 sm:w-5 sm:h-5 text-white' })}
         </div>
       </div>
-      <p className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight leading-none mb-2">{value}</p>
+      <p className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight leading-none mb-2">{value}</p>
       <div className="flex items-center justify-between">
-        {sub && <p className="text-[10px] text-gray-400">{sub}</p>}
+        {sub && <p className="text-[9px] sm:text-[10px] text-gray-400 truncate">{sub}</p>}
         {trend && (
-          <span className={`flex items-center gap-0.5 text-[10px] font-black ${trendUp ? 'text-emerald-600' : 'text-red-500'}`}>
+          <span className={`flex items-center gap-0.5 text-[9px] sm:text-[10px] font-black ${trendUp ? 'text-emerald-600' : 'text-red-500'}`}>
             {trendUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
             {trend}
           </span>
@@ -2137,7 +2287,7 @@ function TabButton({ active, onClick, children, count }) {
   return (
     <button
       onClick={onClick}
-      className={`flex-1 px-6 py-5 text-sm font-bold transition-all whitespace-nowrap border-b-[3px] ${active ? 'text-blue-600 border-blue-600' : 'text-gray-400 border-transparent hover:text-blue-500'}`}
+      className={`flex-1 px-3 sm:px-6 py-3 sm:py-5 text-xs sm:text-sm font-bold transition-all whitespace-nowrap border-b-[3px] ${active ? 'text-blue-600 border-blue-600' : 'text-gray-400 border-transparent hover:text-blue-500'}`}
     >
       <span className="flex items-center justify-center gap-2">
         {children}
