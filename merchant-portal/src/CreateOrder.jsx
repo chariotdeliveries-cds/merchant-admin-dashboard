@@ -526,13 +526,13 @@ function CreateOrder({ merchant, onClose, onOrderCreated }) {
   const defaultCenter = useMemo(() => ({ lat: 5.6037, lng: -0.187 }), [])
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+      <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[92vh] overflow-y-auto">
+        <div className="p-3 sm:p-6">
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
             <div>
-              <h2 className="text-2xl font-bold">Create Order</h2>
-              <p className="text-sm text-gray-500 mt-1">Choose single or bulk delivery</p>
+              <h2 className="text-xl sm:text-2xl font-bold">Create Order</h2>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">Choose single or bulk delivery</p>
             </div>
             <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl" type="button">
               ×

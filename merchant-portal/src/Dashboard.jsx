@@ -1102,7 +1102,7 @@ function Dashboard() {
           {activeView === 'dashboard' && (
             <>
               {/* ✅ MOBILE FIX: gap-2 prevents overflow */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2 mb-6">
                 <ClickableStatCard title="My Orders"  value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
                 <ClickableStatCard title="Pending"    value={pendingOrdersAll.length}    color="yellow" icon={<Clock />}       onClick={() => setStatModal('pending')}   sub="Awaiting" />
                 <ClickableStatCard title="Delivered"  value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Completed" />
@@ -1202,7 +1202,7 @@ function Dashboard() {
           ═══════════════════════════════════════════ */}
           {activeView === 'orders' && (
             <>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2 mb-6">
                 <ClickableStatCard title="Total Orders"  value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
                 <ClickableStatCard title="Pending"       value={pendingOrdersAll.length}    color="yellow" icon={<Clock />}       onClick={() => setStatModal('pending')}   sub="Awaiting" />
                 <ClickableStatCard title="Delivered"     value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Completed" />
@@ -1238,7 +1238,7 @@ function Dashboard() {
           ═══════════════════════════════════════════ */}
           {activeView === 'track' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-1 sm:gap-2">
                 <ClickableStatCard title="Active Deliveries" value={activeOrdersAll.length}                              color="blue"   icon={<Truck />}   onClick={() => setStatModal('active')}   sub="In progress" />
                 <ClickableStatCard title="Awaiting Pickup"   value={orders.filter(o => o.status === 'assigned').length} color="yellow" icon={<Clock />}   onClick={() => setStatModal('pending')}  sub="Assigned, not picked up" />
                 <ClickableStatCard title="Out for Delivery"  value={orders.filter(o => o.status === 'picked_up').length} color="indigo" icon={<MapPin />}                                           sub="En route" />
@@ -1406,7 +1406,7 @@ function Dashboard() {
             const maxCount = Math.max(...last7.map(d => d.count), 1)
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2">
                   {[
                     { label: 'Total Revenue',   value: `GH₵ ${totalRev.toFixed(2)}`, sub: 'All time delivered',           color: 'green' },
                     { label: "Today's Revenue", value: `GH₵ ${todayRev.toFixed(2)}`, sub: `${todayDel.length} today`,     color: 'blue' },
@@ -1535,7 +1535,7 @@ function Dashboard() {
 
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2">
                   <ClickableStatCard title="Total Revenue"    value={`GH₵ ${totalRevenue.toFixed(0)}`}    color="green"  icon={<DollarSign />} onClick={() => setStatModal('delivered')} sub="From deliveries" />
                   <ClickableStatCard title="Digital"          value={`GH₵ ${digitalRevenue.toFixed(0)}`}  color="blue"   icon={<Smartphone />}  sub={`${completedOrders.filter(o => (o.payment_method || 'cash_on_delivery') !== 'cash_on_delivery').length} orders`} />
                   <ClickableStatCard title="Cash Pending"     value={`GH₵ ${pendingDeliveryRevenue.toFixed(0)}`} color="yellow" icon={<Banknote />} sub={`${completedOrders.filter(o => (o.payment_method || 'cash_on_delivery') === 'cash_on_delivery').length} orders`} />
@@ -1658,7 +1658,7 @@ function Dashboard() {
 
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2">
                   <ClickableStatCard title="Total Orders"  value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
                   <ClickableStatCard title="Delivered"     value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Completed" />
                   <ClickableStatCard title="Cancelled"     value={cancelledOrdersAll.length}  color="red"    icon={<XCircle />}     onClick={() => setStatModal('cancelled')} sub="Review" />
@@ -2054,18 +2054,18 @@ function ClickableStatCard({ title, value, color, icon, onClick, sub, trend, tre
   return (
     <button
       onClick={onClick}
-      className={`group relative bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-5 border border-gray-100 text-left w-full min-w-0 overflow-hidden transition-all duration-200 hover:shadow-lg ${c.hover} hover:-translate-y-0.5 focus:outline-none focus:ring-2 ${c.ring} active:scale-95`}
+      className={`group relative bg-white rounded-lg sm:rounded-xl shadow-sm p-2 sm:p-4 border border-gray-100 text-left w-full min-w-0 overflow-hidden transition-all duration-200 hover:shadow-lg ${c.hover} hover:-translate-y-0.5 focus:outline-none focus:ring-2 ${c.ring} active:scale-95`}
     >
       <div className="absolute top-1 right-1 sm:top-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400">
         <Eye className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
       </div>
       <div className="flex items-center justify-between mb-1">
-        <p className="text-gray-400 text-[8px] sm:text-[10px] font-bold uppercase tracking-tighter sm:tracking-widest pr-2 truncate">{title}</p>
-        <div className={`${c.bg} p-1 sm:p-2.5 rounded-md sm:rounded-xl shadow-lg shrink-0`}>
+        <p className="text-gray-400 text-[8px] sm:text-[9px] font-bold uppercase tracking-tighter sm:tracking-widest pr-2 truncate">{title}</p>
+        <div className={`${c.bg} p-1 sm:p-2 rounded-md sm:rounded-lg shadow-lg shrink-0`}>
           {React.cloneElement(icon, { className: 'w-3 h-3 sm:w-4 sm:h-4 text-white' })}
         </div>
       </div>
-      <p className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight leading-none mb-1 sm:mb-2">{value}</p>
+      <p className="text-xl sm:text-3xl font-bold text-gray-900 tracking-tight leading-none mb-1 sm:mb-2">{value}</p>
       <div className="flex items-center justify-between">
         {sub && <p className="text-[7px] sm:text-[10px] text-gray-400 truncate">{sub}</p>}
         {trend && (
