@@ -669,24 +669,25 @@ function Dashboard() {
   }
 
   const handleCancelOrder = async () => {
-    if (!orderToCancel || !cancelReason.trim()) { alert('Please provide a reason for cancellation'); return }
-    try {
-      const { error } = await supabase.from('requests').update({
-        status: 'cancelled', cancelled_by: 'Merchant', cancel_reason: cancelReason, cancelled_at: new Date().toISOString()
-      }).eq('id', orderToCancel.id)
-      if (error) throw error
-      setOrders((prevOrders) => prevOrders.map((order) =>
-        order.id === orderToCancel.id ? { ...order, status: 'cancelled', cancelled_by: 'Merchant', cancel_reason: cancelReason, cancelled_at: new Date().toISOString() } : order
-      ))
-      setShowCancelModal(false)
-      setOrderToCancel(null)
-      setCancelReason('')
-      alert(`Order #${orderToCancel.id} has been cancelled successfully`)
-    } catch (error) {
-      console.error('Cancel order error:', error)
-      alert('Failed to cancel order. Please try again.')
-    }
+  if (!orderToCancel || !cancelReason.trim()) { alert('Please provide a reason for cancellation'); return }
+  try {
+    const { error } = await supabase.from('requests').update({
+      status: 'cancelled', cancelled_by: 'Merchant', cancel_reason: cancelReason, cancelled_at: new Date().toISOString()
+    }).eq('id', orderToCancel.id)
+    if (error) throw error
+    setOrders((prevOrders) => prevOrders.map((order) =>
+      order.id === orderToCancel.id ? { ...order, status: 'cancelled', cancelled_by: 'Merchant', cancel_reason: cancelReason, cancelled_at: new Date().toISOString() } : order
+    ))
+    setActiveTab('cancelled')
+    setShowCancelModal(false)
+    setOrderToCancel(null)
+    setCancelReason('')
+    addNotification('cancelled', orderToCancel.id, `Order #${orderToCancel.id} cancelled successfully`)
+  } catch (error) {
+    console.error('Cancel order error:', error)
+    alert('Failed to cancel order. Please try again.')
   }
+}
 
   const openCancelModal = (order) => { setOrderToCancel(order); setShowCancelModal(true) }
   const closeCancelModal = () => { setShowCancelModal(false); setOrderToCancel(null); setCancelReason('') }
@@ -1196,7 +1197,7 @@ function Dashboard() {
                 <button type="button" onClick={clearTimeFilter} className="self-start md:self-auto px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 font-bold text-xs uppercase">Clear time filter</button>
               </div>
 
-              <div className="mb-6 flex gap-3 items-center">
+              <div className="mb-6 flex gap-2 items-center flex-wrap">
                 <div className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase"><Filter className="w-4 h-4" /><span>Filter:</span></div>
                 <button onClick={() => setOrderTypeFilter('all')} className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${orderTypeFilter === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'}`}>Show All ({totalCount})</button>
                 <button onClick={() => setOrderTypeFilter('single')} className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all flex items-center gap-2 ${orderTypeFilter === 'single' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'}`}><Package className="w-3.5 h-3.5" />Single ({singleCount})</button>
@@ -1223,8 +1224,8 @@ function Dashboard() {
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search orders..." className="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" />
                 </div>
-                <button onClick={() => setShowCreateOrder(true)} className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl hover:bg-blue-700 font-bold text-xs uppercase shadow-lg whitespace-nowrap">
-                  <PlusCircle className="w-4 h-4" />Create Order
+               <button onClick={() => setShowCreateOrder(true)} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl hover:bg-blue-700 font-bold text-xs uppercase shadow-lg whitespace-nowrap shrink-0">
+                <PlusCircle className="w-4 h-4" />Create Order
                 </button>
               </div>
               <div className="bg-white rounded-xl shadow-sm mb-6 flex border-b overflow-x-auto font-bold uppercase">
@@ -2126,10 +2127,10 @@ function ClickableStatCard({ title, value, color, icon, onClick, sub, trend, tre
   const c = colorMap[color] || colorMap.blue
 
   return (
-    <button
-      onClick={onClick}
-      className={`group relative bg-white rounded-lg sm:rounded-xl shadow-sm p-2 sm:p-6 border border-gray-100 text-left w-full min-w-0 transition-all duration-200 hover:shadow-lg ${c.hover} hover:-translate-y-0.5 focus:outline-none focus:ring-2 ${c.ring} active:scale-95`}
-    >
+   <button
+  onClick={onClick}
+  className={`group relative bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-6 border border-gray-100 text-left w-full min-w-0 transition-all duration-200 hover:shadow-lg ${c.hover} hover:-translate-y-0.5 focus:outline-none focus:ring-2 ${c.ring} active:scale-95`}
+>
       <div className="absolute top-1 right-1 sm:top-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400">
         <Eye className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
       </div>
