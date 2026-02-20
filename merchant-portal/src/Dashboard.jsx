@@ -931,9 +931,9 @@ function Dashboard() {
 
       {/* ✅ LEFT SIDEBAR — BLUE BACKGROUND */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-blue-700 to-blue-900 transform transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-blue-700 via-blue-800 to-indigo-900 transform transition-transform duration-300 lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } flex flex-col shadow-2xl`}
+        } flex flex-col shadow-2xl ring-1 ring-white/5`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
@@ -950,7 +950,7 @@ function Dashboard() {
           </div>
 
           {/* ✅ Quick Stats Strip */}
-          <div className="px-4 py-3 border-b border-blue-600/30 grid grid-cols-3 gap-2">
+          <div className="px-4 py-3 border-b border-blue-600/30 grid grid-cols-3 gap-2 overflow-x-auto scrollbar-hide">
             {[
               { label: 'Pending', value: pendingOrdersAll.length, color: 'bg-amber-400/20 text-amber-200' },
               { label: 'Active',  value: activeOrdersAll.length,  color: 'bg-white/20 text-white' },
@@ -961,6 +961,12 @@ function Dashboard() {
                 <p className="text-[9px] font-bold uppercase mt-0.5 opacity-80">{s.label}</p>
               </div>
             ))}
+          </div>
+
+          {/* Quick Actions - compact buttons for mobile */}
+          <div className="px-4 py-3 border-b border-blue-600/20 flex gap-2 items-center">
+            <button onClick={() => { setShowCreateOrder(true); setSidebarOpen(false) }} className="flex-1 bg-white/10 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-white/20 transition">Create</button>
+            <button onClick={() => navigate('track')} className="w-20 bg-white/10 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-white/20 transition">Track</button>
           </div>
 
           {/* Navigation */}
@@ -1107,7 +1113,7 @@ function Dashboard() {
           ═══════════════════════════════════════════════════════ */}
           {activeView === 'dashboard' && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <ClickableStatCard title="My Orders"  value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
                 <ClickableStatCard title="Pending"    value={pendingOrdersAll.length}    color="yellow" icon={<Clock />}       onClick={() => setStatModal('pending')}   sub="Awaiting assignment" />
                 <ClickableStatCard title="Delivered"  value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Successfully completed" />
@@ -1972,7 +1978,7 @@ function ClickableStatCard({ title, value, color, icon, onClick, sub, trend, tre
   return (
     <button
       onClick={onClick}
-      className={`group relative bg-white rounded-xl shadow-sm p-6 border border-gray-100 text-left w-full transition-all duration-200 hover:shadow-lg ${c.hover} hover:-translate-y-0.5 focus:outline-none focus:ring-2 ${c.ring} active:scale-95`}
+      className={`group relative bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100 text-left w-full transition-all duration-200 hover:shadow-lg ${c.hover} hover:-translate-y-0.5 focus:outline-none focus:ring-2 ${c.ring} active:scale-95`}
     >
       <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400">
         <Eye className="w-3.5 h-3.5" />
@@ -1983,7 +1989,7 @@ function ClickableStatCard({ title, value, color, icon, onClick, sub, trend, tre
           {React.cloneElement(icon, { className: 'w-5 h-5 text-white' })}
         </div>
       </div>
-      <p className="text-4xl font-bold text-gray-900 tracking-tight leading-none mb-2">{value}</p>
+      <p className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight leading-none mb-2">{value}</p>
       <div className="flex items-center justify-between">
         {sub && <p className="text-[10px] text-gray-400">{sub}</p>}
         {trend && (
