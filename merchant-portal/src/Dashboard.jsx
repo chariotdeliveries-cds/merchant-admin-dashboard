@@ -54,8 +54,6 @@ import {
 
 // ============================================================
 // ✅ INDEXEDDB PROFILE PICTURE HELPERS
-// Fixes Edge bug: Edge sometimes blocks large base64 in localStorage
-// IndexedDB works reliably across Chrome, Edge, Firefox, Safari
 // ============================================================
 const IDB_DB_NAME = 'chariot_merchant_db'
 const IDB_STORE   = 'profile_data'
@@ -86,7 +84,6 @@ async function saveProfilePictureToDB(base64) {
       req.onerror   = (e) => reject(e.target.error)
     })
   } catch (err) {
-    // Fallback: try localStorage if IndexedDB unavailable
     try { localStorage.setItem('merchant_profile_picture', base64) } catch (_) {}
     console.warn('IndexedDB unavailable, used localStorage:', err)
   }
@@ -103,7 +100,6 @@ async function loadProfilePictureFromDB() {
       req.onerror   = (e) => reject(e.target.error)
     })
   } catch (err) {
-    // Fallback: try localStorage
     try { return localStorage.getItem('merchant_profile_picture') } catch (_) {}
     console.warn('IndexedDB unavailable:', err)
     return null
@@ -126,7 +122,7 @@ async function deleteProfilePictureFromDB() {
 }
 
 // ============================================================
-// ✅ DOWNLOAD ORDER RECEIPT (popup-free) -> opens Print dialog
+// ✅ DOWNLOAD ORDER RECEIPT
 // ============================================================
 function downloadOrderReceipt(order, merchant, opts = {}) {
   const { isInBatch = false, dropNumber = null } = opts
@@ -307,7 +303,7 @@ function downloadOrderReceipt(order, merchant, opts = {}) {
 }
 
 // ============================================================
-// ✅ STAT CARD MODAL — shows all orders for that stat
+// ✅ STAT CARD MODAL
 // ============================================================
 function StatCardModal({ statModal, statModalOrders, onClose, STAT_MODAL_META }) {
   const [modalSearch, setModalSearch] = useState('')
@@ -455,7 +451,7 @@ function StatCardModal({ statModal, statModalOrders, onClose, STAT_MODAL_META })
 }
 
 // ============================================================
-// ✅ STATUS PILL (reusable badge)
+// ✅ STATUS PILL
 // ============================================================
 function StatusPill({ status }) {
   const config = {
@@ -506,7 +502,6 @@ function Dashboard() {
 
   const [statModal, setStatModal] = useState(null)
 
-  // ✅ Settings state — extended with password, email, profile picture
   const [settingsForm, setSettingsForm] = useState({
     business_name: '',
     contact_email: '',
@@ -518,7 +513,6 @@ function Dashboard() {
   })
   const [settingsSaved, setSettingsSaved] = useState(false)
 
-  // ✅ New settings states
   const [settingsTab, setSettingsTab] = useState('profile')
   const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' })
   const [passwordMsg, setPasswordMsg] = useState(null)
@@ -532,11 +526,11 @@ function Dashboard() {
   const realtimeChannelRef = useRef(null)
 
   const STAT_MODAL_META = {
-    total:     { title: 'All Orders',       bg: 'bg-blue-600',    icon: <Package className="w-5 h-5" /> },
-    pending:   { title: 'Pending Orders',   bg: 'bg-amber-500',   icon: <Clock className="w-5 h-5" /> },
-    delivered: { title: 'Delivered Orders', bg: 'bg-emerald-600', icon: <CheckCircle className="w-5 h-5" /> },
-    cancelled: { title: 'Cancelled Orders', bg: 'bg-red-600',     icon: <XCircle className="w-5 h-5" /> },
-    active:    { title: 'Active Deliveries',bg: 'bg-indigo-600',  icon: <Truck className="w-5 h-5" /> },
+    total:     { title: 'All Orders',        bg: 'bg-blue-600',    icon: <Package className="w-5 h-5" /> },
+    pending:   { title: 'Pending Orders',    bg: 'bg-amber-500',   icon: <Clock className="w-5 h-5" /> },
+    delivered: { title: 'Delivered Orders',  bg: 'bg-emerald-600', icon: <CheckCircle className="w-5 h-5" /> },
+    cancelled: { title: 'Cancelled Orders',  bg: 'bg-red-600',     icon: <XCircle className="w-5 h-5" /> },
+    active:    { title: 'Active Deliveries', bg: 'bg-indigo-600',  icon: <Truck className="w-5 h-5" /> },
   }
 
   const safeGetMerchantFromStorage = useCallback(() => {
@@ -564,7 +558,6 @@ function Dashboard() {
         contact_phone: m.phone || '',
       }))
     }
-    // Load saved profile picture — use IndexedDB (works in Edge/Chrome/Firefox)
     loadProfilePictureFromDB().then(pic => {
       if (pic) setProfilePicturePreview(pic)
     })
@@ -669,25 +662,25 @@ function Dashboard() {
   }
 
   const handleCancelOrder = async () => {
-  if (!orderToCancel || !cancelReason.trim()) { alert('Please provide a reason for cancellation'); return }
-  try {
-    const { error } = await supabase.from('requests').update({
-      status: 'cancelled', cancelled_by: 'Merchant', cancel_reason: cancelReason, cancelled_at: new Date().toISOString()
-    }).eq('id', orderToCancel.id)
-    if (error) throw error
-    setOrders((prevOrders) => prevOrders.map((order) =>
-      order.id === orderToCancel.id ? { ...order, status: 'cancelled', cancelled_by: 'Merchant', cancel_reason: cancelReason, cancelled_at: new Date().toISOString() } : order
-    ))
-    setActiveTab('cancelled')
-    setShowCancelModal(false)
-    setOrderToCancel(null)
-    setCancelReason('')
-    addNotification('cancelled', orderToCancel.id, `Order #${orderToCancel.id} cancelled successfully`)
-  } catch (error) {
-    console.error('Cancel order error:', error)
-    alert('Failed to cancel order. Please try again.')
+    if (!orderToCancel || !cancelReason.trim()) { alert('Please provide a reason for cancellation'); return }
+    try {
+      const { error } = await supabase.from('requests').update({
+        status: 'cancelled', cancelled_by: 'Merchant', cancel_reason: cancelReason, cancelled_at: new Date().toISOString()
+      }).eq('id', orderToCancel.id)
+      if (error) throw error
+      setOrders((prevOrders) => prevOrders.map((order) =>
+        order.id === orderToCancel.id ? { ...order, status: 'cancelled', cancelled_by: 'Merchant', cancel_reason: cancelReason, cancelled_at: new Date().toISOString() } : order
+      ))
+      setActiveTab('cancelled')
+      setShowCancelModal(false)
+      setOrderToCancel(null)
+      setCancelReason('')
+      addNotification('cancelled', orderToCancel.id, `Order #${orderToCancel.id} cancelled successfully`)
+    } catch (error) {
+      console.error('Cancel order error:', error)
+      alert('Failed to cancel order. Please try again.')
+    }
   }
-}
 
   const openCancelModal = (order) => { setOrderToCancel(order); setShowCancelModal(true) }
   const closeCancelModal = () => { setShowCancelModal(false); setOrderToCancel(null); setCancelReason('') }
@@ -698,7 +691,6 @@ function Dashboard() {
   }
   const clearAllNotifications = () => { setNotifications([]); setUnreadCount(0) }
 
-  // ✅ Profile picture handler
   const handleProfilePictureChange = (e) => {
     const file = e.target.files[0]
     if (!file) return
@@ -717,7 +709,6 @@ function Dashboard() {
     }
   }
 
-  // ✅ Password change handler
   const handleChangePassword = async () => {
     setPasswordMsg(null)
     if (!passwordForm.current) { setPasswordMsg({ type: 'error', text: 'Please enter your current password' }); return }
@@ -733,7 +724,6 @@ function Dashboard() {
     }
   }
 
-  // ✅ Email change handler
   const handleChangeEmail = async () => {
     setEmailMsg(null)
     if (!emailForm.new || !emailForm.new.includes('@')) { setEmailMsg({ type: 'error', text: 'Please enter a valid email address' }); return }
@@ -776,10 +766,10 @@ function Dashboard() {
 
   const clearTimeFilter = () => { setTimeFilter('all'); setLastXHours(3) }
 
-  const pendingOrdersAll = useMemo(() => orders.filter((o) => o.status === 'pending'), [orders])
+  const pendingOrdersAll   = useMemo(() => orders.filter((o) => o.status === 'pending'), [orders])
   const completedOrdersAll = useMemo(() => orders.filter((o) => o.status === 'delivered'), [orders])
   const cancelledOrdersAll = useMemo(() => orders.filter((o) => o.status === 'cancelled'), [orders])
-  const activeOrdersAll = useMemo(() => orders.filter((o) => o.status === 'assigned' || o.status === 'picked_up'), [orders])
+  const activeOrdersAll    = useMemo(() => orders.filter((o) => o.status === 'assigned' || o.status === 'picked_up'), [orders])
 
   const statModalOrders = useMemo(() => {
     if (!statModal) return []
@@ -794,7 +784,7 @@ function Dashboard() {
   const baseFilteredOrders = useMemo(() => {
     const q = (searchQuery || '').toLowerCase().trim()
     return orders.filter((o) => {
-      if (activeTab === 'pending' && o.status !== 'pending') return false
+      if (activeTab === 'pending'   && o.status !== 'pending')   return false
       if (activeTab === 'delivered' && o.status !== 'delivered') return false
       if (activeTab === 'cancelled' && o.status !== 'cancelled') return false
       if (!passesTimeFilter(o)) return false
@@ -832,8 +822,8 @@ function Dashboard() {
   }, [baseFilteredOrders])
 
   const singleCount = singleOrders.length
-  const bulkCount = batchIds.length
-  const totalCount = singleCount + bulkCount
+  const bulkCount   = batchIds.length
+  const totalCount  = singleCount + bulkCount
 
   const unifiedTimeline = useMemo(() => {
     const items = []
@@ -851,8 +841,8 @@ function Dashboard() {
   }, [batchIds, groupedOrders, singleOrders])
 
   const visibleTimeline = useMemo(() => {
-    if (orderTypeFilter === 'all') return unifiedTimeline
-    if (orderTypeFilter === 'bulk') return unifiedTimeline.filter((x) => x.type === 'batch')
+    if (orderTypeFilter === 'all')    return unifiedTimeline
+    if (orderTypeFilter === 'bulk')   return unifiedTimeline.filter((x) => x.type === 'batch')
     if (orderTypeFilter === 'single') return unifiedTimeline.filter((x) => x.type === 'single')
     return unifiedTimeline
   }, [unifiedTimeline, orderTypeFilter])
@@ -865,7 +855,6 @@ function Dashboard() {
     setSidebarOpen(false)
   }
 
-  // ✅ Shared order list renderer
   const renderOrderList = () => (
     <div className="pb-12">
       {loading ? <LoadingState /> : (
@@ -885,12 +874,12 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
 
-      {/* ✅ STAT CARD MODAL */}
+      {/* STAT CARD MODAL */}
       {statModal && (
         <StatCardModal statModal={statModal} statModalOrders={statModalOrders} onClose={() => setStatModal(null)} STAT_MODAL_META={STAT_MODAL_META} />
       )}
 
-      {/* ✅ CANCEL ORDER MODAL */}
+      {/* CANCEL ORDER MODAL */}
       {showCancelModal && orderToCancel && (
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden">
@@ -930,14 +919,13 @@ function Dashboard() {
         </div>
       )}
 
-      {/* ✅ LEFT SIDEBAR — BLUE BACKGROUND */}
+      {/* LEFT SIDEBAR */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-56 md:w-64 bg-gradient-to-b from-blue-700 via-blue-800 to-indigo-900 transform transition-transform duration-300 md:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } flex flex-col shadow-2xl ring-1 ring-white/5`}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
           <div className="p-5 border-b border-blue-600/50">
             <div className="flex items-center gap-3">
               <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
@@ -950,12 +938,11 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* ✅ Quick Stats Strip */}
           <div className="px-4 py-3 border-b border-blue-600/30 flex gap-2 overflow-x-auto scrollbar-hide">
             {[
-              { label: 'Pending', value: pendingOrdersAll.length, color: 'bg-amber-400/20 text-amber-200' },
-              { label: 'Active',  value: activeOrdersAll.length,  color: 'bg-white/20 text-white' },
-              { label: 'Done',    value: completedOrdersAll.length,color: 'bg-emerald-400/20 text-emerald-200' },
+              { label: 'Pending', value: pendingOrdersAll.length,   color: 'bg-amber-400/20 text-amber-200' },
+              { label: 'Active',  value: activeOrdersAll.length,    color: 'bg-white/20 text-white' },
+              { label: 'Done',    value: completedOrdersAll.length, color: 'bg-emerald-400/20 text-emerald-200' },
             ].map(s => (
               <div key={s.label} className={`${s.color} rounded-lg p-2 text-center cursor-pointer border border-white/10`}>
                 <p className="text-base font-black leading-none">{s.value}</p>
@@ -964,13 +951,11 @@ function Dashboard() {
             ))}
           </div>
 
-          {/* Quick Actions - compact buttons for mobile */}
           <div className="px-4 py-3 border-b border-blue-600/20 flex gap-2 items-center">
             <button onClick={() => { setShowCreateOrder(true); setSidebarOpen(false) }} className="flex-1 bg-white/10 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-white/20 transition">Create</button>
             <button onClick={() => navigate('track')} className="w-20 bg-white/10 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-white/20 transition">Track</button>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 p-4 space-y-0.5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <p className="text-[9px] font-black text-blue-300 uppercase tracking-widest px-3 pt-1 pb-2">Main Menu</p>
 
@@ -981,7 +966,7 @@ function Dashboard() {
             <p className="text-[9px] font-black text-blue-300 uppercase tracking-widest px-3 pt-4 pb-2">Insights</p>
 
             <SidebarItem icon={<BarChart3 className="w-5 h-5" />} label="Reports" description={`GH₵ ${completedOrdersAll.reduce((s,o)=>s+Number(o.price||0),0).toFixed(0)} total revenue`} active={activeView === 'reports'} onClick={() => navigate('reports')} />
-            <SidebarItem icon={<CreditCard className="w-5 h-5" />} label="Payments" description={`Track transactions`} active={activeView === 'payments'} onClick={() => navigate('payments')} />
+            <SidebarItem icon={<CreditCard className="w-5 h-5" />} label="Payments" description="Track transactions" active={activeView === 'payments'} onClick={() => navigate('payments')} />
             <SidebarItem icon={<Activity className="w-5 h-5" />} label="Performance" description={`${orders.length ? (completedOrdersAll.length/orders.length*100).toFixed(0) : 0}% completion rate`} active={activeView === 'performance'} onClick={() => navigate('performance')} />
 
             <p className="text-[9px] font-black text-blue-300 uppercase tracking-widest px-3 pt-4 pb-2">Actions</p>
@@ -1000,7 +985,6 @@ function Dashboard() {
             <SidebarItem icon={<Settings className="w-5 h-5" />} label="Settings" description="Profile, security & notifications" active={activeView === 'settings'} onClick={() => navigate('settings')} />
           </nav>
 
-          {/* User Profile */}
           <div className="p-4 border-t border-blue-600/50">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
@@ -1028,7 +1012,7 @@ function Dashboard() {
         </div>
       </aside>
 
-      {/* ✅ MAIN CONTENT */}
+      {/* MAIN CONTENT */}
       <div className="flex-1 md:ml-64">
         {/* Top Bar */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
@@ -1039,22 +1023,22 @@ function Dashboard() {
               </button>
               <div className="min-w-0">
                 <h1 className="text-base sm:text-xl font-bold text-gray-900 truncate">
-                  {activeView === 'dashboard' && 'Dashboard'}
-                  {activeView === 'orders' && 'All Orders'}
-                  {activeView === 'track' && 'Track Deliveries'}
-                  {activeView === 'reports' && 'Reports & Analytics'}
-                  {activeView === 'payments' && 'Payment Tracking'}
+                  {activeView === 'dashboard'   && 'Dashboard'}
+                  {activeView === 'orders'      && 'All Orders'}
+                  {activeView === 'track'       && 'Track Deliveries'}
+                  {activeView === 'reports'     && 'Reports & Analytics'}
+                  {activeView === 'payments'    && 'Payment Tracking'}
                   {activeView === 'performance' && 'Performance'}
-                  {activeView === 'settings' && 'Settings'}
+                  {activeView === 'settings'    && 'Settings'}
                 </h1>
                 <p className="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase hidden sm:block">
-                  {activeView === 'dashboard' && 'Manage your deliveries'}
-                  {activeView === 'orders' && `${orders.length} total orders`}
-                  {activeView === 'track' && `${activeOrdersAll.length} active deliveries`}
-                  {activeView === 'reports' && 'Business insights & revenue'}
-                  {activeView === 'payments' && 'View all transactions'}
+                  {activeView === 'dashboard'   && 'Manage your deliveries'}
+                  {activeView === 'orders'      && `${orders.length} total orders`}
+                  {activeView === 'track'       && `${activeOrdersAll.length} active deliveries`}
+                  {activeView === 'reports'     && 'Business insights & revenue'}
+                  {activeView === 'payments'    && 'View all transactions'}
                   {activeView === 'performance' && 'KPIs & metrics'}
-                  {activeView === 'settings' && 'Account configuration'}
+                  {activeView === 'settings'    && 'Account configuration'}
                 </p>
               </div>
             </div>
@@ -1076,7 +1060,7 @@ function Dashboard() {
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 mt-3 w-96 bg-white rounded-xl shadow-2xl border text-gray-800 overflow-hidden">
+                <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border text-gray-800 overflow-hidden">
                   <div className="p-4 bg-gray-50 border-b font-bold text-xs uppercase tracking-widest text-gray-400 flex justify-between items-center">
                     <span>Activity Notifications</span>
                     {notifications.length > 0 && <button onClick={clearAllNotifications} className="text-[10px] text-blue-600 hover:underline normal-case">Clear All</button>}
@@ -1087,10 +1071,10 @@ function Dashboard() {
                         <div className="flex items-start gap-3">
                           <div className={`p-2 rounded-lg ${notif.type === 'admin_cancelled' ? 'bg-red-100' : notif.type === 'rider_assigned' ? 'bg-blue-100' : notif.type === 'picked_up' ? 'bg-amber-100' : notif.type === 'delivered' ? 'bg-green-100' : 'bg-gray-100'}`}>
                             {notif.type === 'admin_cancelled' && <AlertCircle className="w-4 h-4 text-red-600" />}
-                            {notif.type === 'rider_assigned' && <Truck className="w-4 h-4 text-blue-600" />}
-                            {notif.type === 'picked_up' && <Package className="w-4 h-4 text-amber-600" />}
-                            {notif.type === 'delivered' && <CheckCircle className="w-4 h-4 text-green-600" />}
-                            {notif.type === 'cancelled' && <XCircle className="w-4 h-4 text-gray-600" />}
+                            {notif.type === 'rider_assigned'  && <Truck className="w-4 h-4 text-blue-600" />}
+                            {notif.type === 'picked_up'       && <Package className="w-4 h-4 text-amber-600" />}
+                            {notif.type === 'delivered'       && <CheckCircle className="w-4 h-4 text-green-600" />}
+                            {notif.type === 'cancelled'       && <XCircle className="w-4 h-4 text-gray-600" />}
                           </div>
                           <div className="flex-1">
                             <p className="font-bold text-gray-900">{notif.message}</p>
@@ -1112,16 +1096,17 @@ function Dashboard() {
         {/* Main Content Area */}
         <main className="p-3 sm:p-6">
 
-          {/* ═══════════════════════════════════════════════════════
+          {/* ═══════════════════════════════════════════
               DASHBOARD VIEW
-          ═══════════════════════════════════════════════════════ */}
+          ═══════════════════════════════════════════ */}
           {activeView === 'dashboard' && (
             <>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2.5 mb-6">
+              {/* ✅ MOBILE FIX: gap-2 prevents overflow */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-6">
                 <ClickableStatCard title="My Orders"  value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
-                <ClickableStatCard title="Pending"    value={pendingOrdersAll.length}    color="yellow" icon={<Clock />}       onClick={() => setStatModal('pending')}   sub="Awaiting assignment" />
-                <ClickableStatCard title="Delivered"  value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Successfully completed" />
-                <ClickableStatCard title="Cancelled"  value={cancelledOrdersAll.length}  color="red"    icon={<XCircle />}     onClick={() => setStatModal('cancelled')} sub="Click to review" />
+                <ClickableStatCard title="Pending"    value={pendingOrdersAll.length}    color="yellow" icon={<Clock />}       onClick={() => setStatModal('pending')}   sub="Awaiting" />
+                <ClickableStatCard title="Delivered"  value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Completed" />
+                <ClickableStatCard title="Cancelled"  value={cancelledOrdersAll.length}  color="red"    icon={<XCircle />}     onClick={() => setStatModal('cancelled')} sub="Review" />
               </div>
 
               {activeOrdersAll.length > 0 && (
@@ -1156,27 +1141,30 @@ function Dashboard() {
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                <div className="flex-1 relative">
+              {/* ✅ MOBILE FIX: always flex-row, shrink-0 on button, min-w-0 on input */}
+              <div className="flex flex-row gap-2 mb-6">
+                <div className="flex-1 relative min-w-0">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search orders..." className="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" />
                 </div>
-                <button onClick={() => setShowCreateOrder(true)} className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl hover:bg-blue-700 transition-all shadow-lg font-bold text-xs uppercase whitespace-nowrap">
-                  <PlusCircle className="w-4 h-4" />Create Order
+                <button onClick={() => setShowCreateOrder(true)} className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2.5 rounded-xl hover:bg-blue-700 transition-all shadow-lg font-bold text-xs uppercase whitespace-nowrap shrink-0">
+                  <PlusCircle className="w-4 h-4" />
+                  <span className="hidden sm:inline">Create Order</span>
+                  <span className="sm:hidden">New</span>
                 </button>
               </div>
 
               <div className="bg-white rounded-xl shadow-sm mb-6 flex border-b overflow-x-auto scrollbar-hide font-bold uppercase">
-                <TabButton active={activeTab === 'orders'}    onClick={() => setActiveTab('orders')}    count={orders.length}>All Orders</TabButton>
+                <TabButton active={activeTab === 'orders'}    onClick={() => setActiveTab('orders')}    count={orders.length}>All</TabButton>
                 <TabButton active={activeTab === 'pending'}   onClick={() => setActiveTab('pending')}   count={pendingOrdersAll.length}>Pending</TabButton>
                 <TabButton active={activeTab === 'delivered'} onClick={() => setActiveTab('delivered')} count={completedOrdersAll.length}>Delivered</TabButton>
                 <TabButton active={activeTab === 'cancelled'} onClick={() => setActiveTab('cancelled')} count={cancelledOrdersAll.length}>Cancelled</TabButton>
               </div>
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase"><Calendar className="w-4 h-4" /><span>Time:</span></div>
-                  <select value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)} className="px-4 py-2 rounded-xl border border-gray-200 bg-white font-bold text-xs uppercase outline-none focus:border-blue-500">
+                  <select value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)} className="px-3 py-2 rounded-xl border border-gray-200 bg-white font-bold text-xs uppercase outline-none focus:border-blue-500">
                     <option value="all">All Time</option>
                     <option value="today">Today</option>
                     <option value="week">This Week</option>
@@ -1194,59 +1182,66 @@ function Dashboard() {
                   )}
                   <span className="text-[10px] font-black uppercase text-gray-400 hidden md:inline">{timeLabel}</span>
                 </div>
-                <button type="button" onClick={clearTimeFilter} className="self-start md:self-auto px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 font-bold text-xs uppercase">Clear time filter</button>
+                <button type="button" onClick={clearTimeFilter} className="self-start md:self-auto px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 font-bold text-xs uppercase">Clear</button>
               </div>
 
+              {/* ✅ MOBILE FIX: flex-wrap so filter buttons wrap instead of overflow */}
               <div className="mb-6 flex gap-2 items-center flex-wrap">
-                <div className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase"><Filter className="w-4 h-4" /><span>Filter:</span></div>
-                <button onClick={() => setOrderTypeFilter('all')} className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${orderTypeFilter === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'}`}>Show All ({totalCount})</button>
-                <button onClick={() => setOrderTypeFilter('single')} className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all flex items-center gap-2 ${orderTypeFilter === 'single' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'}`}><Package className="w-3.5 h-3.5" />Single ({singleCount})</button>
-                <button onClick={() => setOrderTypeFilter('bulk')} className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all flex items-center gap-2 ${orderTypeFilter === 'bulk' ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-purple-300'}`}><Layers className="w-3.5 h-3.5" />Bulk ({bulkCount})</button>
+                <div className="flex items-center gap-1.5 text-xs font-bold text-gray-600 uppercase"><Filter className="w-3 h-3" /><span>Filter:</span></div>
+                <button onClick={() => setOrderTypeFilter('all')}    className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${orderTypeFilter === 'all'    ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'}`}>All ({totalCount})</button>
+                <button onClick={() => setOrderTypeFilter('single')} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all flex items-center gap-1.5 ${orderTypeFilter === 'single' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'}`}><Package className="w-3 h-3" />Single ({singleCount})</button>
+                <button onClick={() => setOrderTypeFilter('bulk')}   className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all flex items-center gap-1.5 ${orderTypeFilter === 'bulk'   ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-purple-300'}`}><Layers className="w-3 h-3" />Bulk ({bulkCount})</button>
               </div>
 
               {renderOrderList()}
             </>
           )}
 
-          {/* ═══════════════════════════════════════════════════════
+          {/* ═══════════════════════════════════════════
               ALL ORDERS VIEW
-          ═══════════════════════════════════════════════════════ */}
+          ═══════════════════════════════════════════ */}
           {activeView === 'orders' && (
             <>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2.5 mb-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-6">
                 <ClickableStatCard title="Total Orders"  value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
-                <ClickableStatCard title="Pending"       value={pendingOrdersAll.length}    color="yellow" icon={<Clock />}       onClick={() => setStatModal('pending')}   sub="Awaiting rider" />
+                <ClickableStatCard title="Pending"       value={pendingOrdersAll.length}    color="yellow" icon={<Clock />}       onClick={() => setStatModal('pending')}   sub="Awaiting" />
                 <ClickableStatCard title="Delivered"     value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Completed" />
-                <ClickableStatCard title="Cancelled"     value={cancelledOrdersAll.length}  color="red"    icon={<XCircle />}     onClick={() => setStatModal('cancelled')} sub="Click to view" />
+                <ClickableStatCard title="Cancelled"     value={cancelledOrdersAll.length}  color="red"    icon={<XCircle />}     onClick={() => setStatModal('cancelled')} sub="View" />
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                <div className="flex-1 relative">
+
+              {/* ✅ MOBILE FIX: always flex-row */}
+              <div className="flex flex-row gap-2 mb-6">
+                <div className="flex-1 relative min-w-0">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search orders..." className="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" />
                 </div>
-               <button onClick={() => setShowCreateOrder(true)} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl hover:bg-blue-700 font-bold text-xs uppercase shadow-lg whitespace-nowrap shrink-0">
-                <PlusCircle className="w-4 h-4" />Create Order
+                <button onClick={() => setShowCreateOrder(true)} className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2.5 rounded-xl hover:bg-blue-700 font-bold text-xs uppercase shadow-lg whitespace-nowrap shrink-0">
+                  <PlusCircle className="w-4 h-4" />
+                  <span className="hidden sm:inline">Create Order</span>
+                  <span className="sm:hidden">New</span>
                 </button>
               </div>
+
               <div className="bg-white rounded-xl shadow-sm mb-6 flex border-b overflow-x-auto font-bold uppercase">
-                <TabButton active={activeTab === 'orders'}    onClick={() => setActiveTab('orders')}    count={orders.length}>All Orders</TabButton>
+                <TabButton active={activeTab === 'orders'}    onClick={() => setActiveTab('orders')}    count={orders.length}>All</TabButton>
                 <TabButton active={activeTab === 'pending'}   onClick={() => setActiveTab('pending')}   count={pendingOrdersAll.length}>Pending</TabButton>
                 <TabButton active={activeTab === 'delivered'} onClick={() => setActiveTab('delivered')} count={completedOrdersAll.length}>Delivered</TabButton>
                 <TabButton active={activeTab === 'cancelled'} onClick={() => setActiveTab('cancelled')} count={cancelledOrdersAll.length}>Cancelled</TabButton>
               </div>
+
               {renderOrderList()}
             </>
           )}
 
-          {/* ═══════════════════════════════════════════════════════
+          {/* ═══════════════════════════════════════════
               TRACK DELIVERIES VIEW
-          ═══════════════════════════════════════════════════════ */}
+          ═══════════════════════════════════════════ */}
           {activeView === 'track' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-1 sm:gap-2.5">
-                <ClickableStatCard title="Active Deliveries" value={activeOrdersAll.length} color="blue" icon={<Truck />} onClick={() => setStatModal('active')} sub="In progress right now" />
-                <ClickableStatCard title="Awaiting Pickup" value={orders.filter(o => o.status === 'assigned').length} color="yellow" icon={<Clock />} onClick={() => setStatModal('pending')} sub="Assigned, not picked up" />
-                <ClickableStatCard title="Out for Delivery" value={orders.filter(o => o.status === 'picked_up').length} color="indigo" icon={<MapPin />} sub="En route to receiver" />
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                <ClickableStatCard title="Active Deliveries" value={activeOrdersAll.length}                              color="blue"   icon={<Truck />}   onClick={() => setStatModal('active')}   sub="In progress" />
+                <ClickableStatCard title="Awaiting Pickup"   value={orders.filter(o => o.status === 'assigned').length} color="yellow" icon={<Clock />}   onClick={() => setStatModal('pending')}  sub="Assigned, not picked up" />
+                <ClickableStatCard title="Out for Delivery"  value={orders.filter(o => o.status === 'picked_up').length} color="indigo" icon={<MapPin />}                                           sub="En route" />
               </div>
 
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -1390,18 +1385,18 @@ function Dashboard() {
             </div>
           )}
 
-          {/* ═══════════════════════════════════════════════════════
+          {/* ═══════════════════════════════════════════
               REPORTS & ANALYTICS VIEW
-          ═══════════════════════════════════════════════════════ */}
+          ═══════════════════════════════════════════ */}
           {activeView === 'reports' && (() => {
-            const delivered = orders.filter(o => o.status === 'delivered')
-            const cancelled = orders.filter(o => o.status === 'cancelled')
-            const totalRev  = delivered.reduce((s, o) => s + Number(o.price || 0), 0)
-            const todayDel  = delivered.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString())
-            const todayRev  = todayDel.reduce((s, o) => s + Number(o.price || 0), 0)
-            const avgVal    = delivered.length ? totalRev / delivered.length : 0
-            const compRate  = orders.length ? ((delivered.length / orders.length) * 100).toFixed(1) : 0
-            const cancelRate= orders.length ? ((cancelled.length / orders.length) * 100).toFixed(1) : 0
+            const delivered  = orders.filter(o => o.status === 'delivered')
+            const cancelled  = orders.filter(o => o.status === 'cancelled')
+            const totalRev   = delivered.reduce((s, o) => s + Number(o.price || 0), 0)
+            const todayDel   = delivered.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString())
+            const todayRev   = todayDel.reduce((s, o) => s + Number(o.price || 0), 0)
+            const avgVal     = delivered.length ? totalRev / delivered.length : 0
+            const compRate   = orders.length ? ((delivered.length / orders.length) * 100).toFixed(1) : 0
+            const cancelRate = orders.length ? ((cancelled.length / orders.length) * 100).toFixed(1) : 0
             const last7 = [...Array(7)].map((_, i) => {
               const d = new Date(); d.setDate(d.getDate() - (6 - i))
               const label = d.toLocaleDateString('en', { weekday: 'short' })
@@ -1411,12 +1406,12 @@ function Dashboard() {
             const maxCount = Math.max(...last7.map(d => d.count), 1)
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2.5">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                   {[
-                    { label: 'Total Revenue',    value: `GH₵ ${totalRev.toFixed(2)}`,  sub: 'All time delivered', color: 'green' },
-                    { label: "Today's Revenue",  value: `GH₵ ${todayRev.toFixed(2)}`,  sub: `${todayDel.length} orders today`, color: 'blue' },
-                    { label: 'Avg Order Value',  value: `GH₵ ${avgVal.toFixed(2)}`,    sub: 'Per completed order', color: 'indigo' },
-                    { label: 'Completion Rate',  value: `${compRate}%`,                 sub: `${delivered.length} of ${orders.length} completed`, color: 'yellow' },
+                    { label: 'Total Revenue',   value: `GH₵ ${totalRev.toFixed(2)}`, sub: 'All time delivered',           color: 'green' },
+                    { label: "Today's Revenue", value: `GH₵ ${todayRev.toFixed(2)}`, sub: `${todayDel.length} today`,     color: 'blue' },
+                    { label: 'Avg Order Value', value: `GH₵ ${avgVal.toFixed(2)}`,   sub: 'Per completed order',          color: 'indigo' },
+                    { label: 'Completion Rate', value: `${compRate}%`,                sub: `${delivered.length} of ${orders.length}`, color: 'yellow' },
                   ].map(card => (
                     <div key={card.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">{card.label}</p>
@@ -1469,8 +1464,8 @@ function Dashboard() {
                           <tr>
                             <th className="px-6 py-3">Order</th>
                             <th className="px-6 py-3">Customer</th>
-                            <th className="px-6 py-3">Destination</th>
-                            <th className="px-6 py-3">Rider</th>
+                            <th className="px-6 py-3 hidden sm:table-cell">Destination</th>
+                            <th className="px-6 py-3 hidden sm:table-cell">Rider</th>
                             <th className="px-6 py-3 text-right">Amount</th>
                           </tr>
                         </thead>
@@ -1479,8 +1474,8 @@ function Dashboard() {
                             <tr key={o.id} className="hover:bg-gray-50">
                               <td className="px-6 py-4 text-gray-900">#{o.id}</td>
                               <td className="px-6 py-4 text-gray-700 normal-case font-semibold">{o.customer_name}</td>
-                              <td className="px-6 py-4 text-gray-500 normal-case font-semibold max-w-[160px] truncate">{o.dropoff_address}</td>
-                              <td className="px-6 py-4 text-gray-700 normal-case font-semibold">{o.driver_name || '-'}</td>
+                              <td className="px-6 py-4 text-gray-500 normal-case font-semibold max-w-[160px] truncate hidden sm:table-cell">{o.dropoff_address}</td>
+                              <td className="px-6 py-4 text-gray-700 normal-case font-semibold hidden sm:table-cell">{o.driver_name || '-'}</td>
                               <td className="px-6 py-4 text-right text-blue-600">GH₵ {Number(o.price||0).toFixed(2)}</td>
                             </tr>
                           ))}
@@ -1506,14 +1501,14 @@ function Dashboard() {
             )
           })()}
 
-          {/* ═══════════════════════════════════════════════════════
-              PAYMENTS VIEW — TRACK TRANSACTIONS & PAYMENT METHODS
-          ═══════════════════════════════════════════════════════ */}
+          {/* ═══════════════════════════════════════════
+              PAYMENTS VIEW
+          ═══════════════════════════════════════════ */}
           {activeView === 'payments' && (() => {
             const completedOrders = orders.filter(o => o.status === 'delivered')
-            const totalRevenue = completedOrders.reduce((s, o) => s + Number(o.price || 0), 0)
-            const paymentMethods = {}
-            
+            const totalRevenue    = completedOrders.reduce((s, o) => s + Number(o.price || 0), 0)
+            const paymentMethods  = {}
+
             completedOrders.forEach(order => {
               const method = order.payment_method || 'cash_on_delivery'
               if (!paymentMethods[method]) {
@@ -1523,31 +1518,30 @@ function Dashboard() {
               paymentMethods[method].revenue += Number(order.price || 0)
               paymentMethods[method].orders.push(order)
             })
-            
+
             const pendingDeliveryRevenue = completedOrders
               .filter(o => (o.payment_method || 'cash_on_delivery') === 'cash_on_delivery')
               .reduce((s, o) => s + Number(o.price || 0), 0)
             const digitalRevenue = totalRevenue - pendingDeliveryRevenue
-            
+
             const methodLabels = {
-              cash_on_delivery: { label: '💵 Cash on Delivery', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
-              mobile_money: { label: '📱 Mobile Money', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
-              card: { label: '💳 Card Payment', color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
-              bank_transfer: { label: '🏦 Bank Transfer', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' },
+              cash_on_delivery: { label: '💵 Cash on Delivery', color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-amber-200' },
+              mobile_money:     { label: '📱 Mobile Money',     color: 'text-blue-600',   bg: 'bg-blue-50',   border: 'border-blue-200' },
+              card:             { label: '💳 Card Payment',     color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
+              bank_transfer:    { label: '🏦 Bank Transfer',    color: 'text-green-600',  bg: 'bg-green-50',  border: 'border-green-200' },
             }
-            
+
             const methodEntries = Object.values(paymentMethods).sort((a, b) => b.revenue - a.revenue)
-            
+
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2.5">
-                  <ClickableStatCard title="Total Revenue" value={`GH₵ ${totalRevenue.toFixed(0)}`} color="green" icon={<DollarSign />} onClick={() => setStatModal('delivered')} sub="From deliveries" />
-                  <ClickableStatCard title="Digital Payments" value={`GH₵ ${digitalRevenue.toFixed(0)}`} color="blue" icon={<Smartphone />} sub={`${completedOrders.filter(o => (o.payment_method || 'cash_on_delivery') !== 'cash_on_delivery').length} orders` || 'Processed'} />
-                  <ClickableStatCard title="Cash Pending" value={`GH₵ ${pendingDeliveryRevenue.toFixed(0)}`} color="yellow" icon={<Banknote />} sub={`${completedOrders.filter(o => (o.payment_method || 'cash_on_delivery') === 'cash_on_delivery').length} orders`} />
-                  <ClickableStatCard title="Avg Order Value" value={`GH₵ ${completedOrders.length ? (totalRevenue / completedOrders.length).toFixed(2) : '0.00'}`} color="indigo" icon={<Percent />} sub="Per delivery" />
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                  <ClickableStatCard title="Total Revenue"    value={`GH₵ ${totalRevenue.toFixed(0)}`}    color="green"  icon={<DollarSign />} onClick={() => setStatModal('delivered')} sub="From deliveries" />
+                  <ClickableStatCard title="Digital"          value={`GH₵ ${digitalRevenue.toFixed(0)}`}  color="blue"   icon={<Smartphone />}  sub={`${completedOrders.filter(o => (o.payment_method || 'cash_on_delivery') !== 'cash_on_delivery').length} orders`} />
+                  <ClickableStatCard title="Cash Pending"     value={`GH₵ ${pendingDeliveryRevenue.toFixed(0)}`} color="yellow" icon={<Banknote />} sub={`${completedOrders.filter(o => (o.payment_method || 'cash_on_delivery') === 'cash_on_delivery').length} orders`} />
+                  <ClickableStatCard title="Avg Order"        value={`GH₵ ${completedOrders.length ? (totalRevenue / completedOrders.length).toFixed(2) : '0.00'}`} color="indigo" icon={<Percent />} sub="Per delivery" />
                 </div>
 
-                {/* Payment Methods Overview */}
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                   <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                     <div>
@@ -1559,7 +1553,7 @@ function Dashboard() {
                   <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {methodEntries.map(({ method, count, revenue }) => {
                       const info = methodLabels[method] || methodLabels.cash_on_delivery
-                      const pct = totalRevenue ? (revenue / totalRevenue * 100).toFixed(0) : 0
+                      const pct  = totalRevenue ? (revenue / totalRevenue * 100).toFixed(0) : 0
                       return (
                         <div key={method} className={`${info.bg} ${info.border} border rounded-xl p-5`}>
                           <div className="flex items-center justify-between mb-3">
@@ -1577,7 +1571,6 @@ function Dashboard() {
                   </div>
                 </div>
 
-                {/* Payment Flow */}
                 <div className="bg-gradient-to-r from-green-600 to-emerald-700 rounded-2xl p-6 text-white shadow-lg">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="bg-white/20 p-2.5 rounded-xl"><TrendingUp className="w-6 h-6 text-white" /></div>
@@ -1589,18 +1582,17 @@ function Dashboard() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white/10 rounded-xl p-4 text-center border border-white/20">
                       <p className="text-sm font-bold text-green-200 mb-1">Pending Collection</p>
-                      <p className="text-3xl font-black">GH₵ {pendingDeliveryRevenue.toFixed(0)}</p>
+                      <p className="text-2xl sm:text-3xl font-black">GH₵ {pendingDeliveryRevenue.toFixed(0)}</p>
                       <p className="text-[10px] text-green-200 mt-1">Cash on Delivery</p>
                     </div>
                     <div className="bg-white/10 rounded-xl p-4 text-center border border-white/20">
                       <p className="text-sm font-bold text-green-200 mb-1">Already Received</p>
-                      <p className="text-3xl font-black">GH₵ {digitalRevenue.toFixed(0)}</p>
+                      <p className="text-2xl sm:text-3xl font-black">GH₵ {digitalRevenue.toFixed(0)}</p>
                       <p className="text-[10px] text-green-200 mt-1">Digital Methods</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Recent Transactions */}
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                   <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                     <div>
@@ -1613,32 +1605,26 @@ function Dashboard() {
                     <table className="w-full text-left text-xs font-bold uppercase">
                       <thead className="bg-gray-50 text-gray-400 border-b border-gray-100">
                         <tr>
-                          <th className="px-6 py-3">Order</th>
-                          <th className="px-6 py-3">Customer</th>
-                          <th className="px-6 py-3">Payment Method</th>
-                          <th className="px-6 py-3">Amount</th>
-                          <th className="px-6 py-3">Status</th>
-                          <th className="px-6 py-3">Date</th>
+                          <th className="px-4 py-3">Order</th>
+                          <th className="px-4 py-3">Customer</th>
+                          <th className="px-4 py-3 hidden sm:table-cell">Method</th>
+                          <th className="px-4 py-3">Amount</th>
+                          <th className="px-4 py-3 hidden sm:table-cell">Status</th>
+                          <th className="px-4 py-3 hidden sm:table-cell">Date</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50">
                         {completedOrders.slice(0, 10).map(order => {
                           const method = order.payment_method || 'cash_on_delivery'
-                          const info = methodLabels[method]
+                          const info   = methodLabels[method] || methodLabels.cash_on_delivery
                           return (
                             <tr key={order.id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 text-gray-900">#{order.id}</td>
-                              <td className="px-6 py-4 text-gray-700 normal-case font-semibold">{order.customer_name}</td>
-                              <td className="px-6 py-4">
-                                <span className={`text-[10px] px-2 py-1 rounded-full ${info.bg} ${info.color} font-bold`}>
-                                  {info.label}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 text-gray-900 font-black">GH₵ {Number(order.price || 0).toFixed(2)}</td>
-                              <td className="px-6 py-4">
-                                <span className="text-[10px] px-2 py-1 rounded-full bg-green-100 text-green-700 font-bold uppercase">Delivered</span>
-                              </td>
-                              <td className="px-6 py-4 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
+                              <td className="px-4 py-3 text-gray-900">#{order.id}</td>
+                              <td className="px-4 py-3 text-gray-700 normal-case font-semibold">{order.customer_name}</td>
+                              <td className="px-4 py-3 hidden sm:table-cell"><span className={`text-[10px] px-2 py-1 rounded-full ${info.bg} ${info.color} font-bold`}>{info.label}</span></td>
+                              <td className="px-4 py-3 text-gray-900 font-black">GH₵ {Number(order.price||0).toFixed(2)}</td>
+                              <td className="px-4 py-3 hidden sm:table-cell"><span className="text-[10px] px-2 py-1 rounded-full bg-green-100 text-green-700 font-bold uppercase">Delivered</span></td>
+                              <td className="px-4 py-3 text-gray-500 hidden sm:table-cell">{new Date(order.created_at).toLocaleDateString()}</td>
                             </tr>
                           )
                         })}
@@ -1653,30 +1639,30 @@ function Dashboard() {
             )
           })()}
 
-          {/* ═══════════════════════════════════════════════════════
-              PERFORMANCE VIEW — NO RIDER LEADERBOARD IN SIDEBAR
-          ═══════════════════════════════════════════════════════ */}
+          {/* ═══════════════════════════════════════════
+              PERFORMANCE VIEW
+          ═══════════════════════════════════════════ */}
           {activeView === 'performance' && (() => {
             const delivered = completedOrdersAll
-            const totalRev = delivered.reduce((s, o) => s + Number(o.price || 0), 0)
-            const compRate = orders.length ? (delivered.length / orders.length * 100).toFixed(1) : 0
-            const riderMap = {}
+            const totalRev  = delivered.reduce((s, o) => s + Number(o.price || 0), 0)
+            const compRate  = orders.length ? (delivered.length / orders.length * 100).toFixed(1) : 0
+            const riderMap  = {}
             delivered.forEach(o => {
               if (!o.driver_name) return
               if (!riderMap[o.driver_name]) riderMap[o.driver_name] = { name: o.driver_name, phone: o.driver_phone, count: 0, revenue: 0 }
               riderMap[o.driver_name].count++
               riderMap[o.driver_name].revenue += Number(o.price || 0)
             })
-            const riders = Object.values(riderMap).sort((a, b) => b.count - a.count)
+            const riders   = Object.values(riderMap).sort((a, b) => b.count - a.count)
             const topRider = riders[0]
 
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2.5">
-                  <ClickableStatCard title="Total Orders"   value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
-                  <ClickableStatCard title="Delivered"      value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Completed" />
-                  <ClickableStatCard title="Cancelled"      value={cancelledOrdersAll.length}  color="red"    icon={<XCircle />}     onClick={() => setStatModal('cancelled')} sub="Click to review" />
-                  <ClickableStatCard title="Active Now"     value={activeOrdersAll.length}     color="indigo" icon={<Truck />}       onClick={() => setStatModal('active')}    sub="In progress" />
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                  <ClickableStatCard title="Total Orders"  value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
+                  <ClickableStatCard title="Delivered"     value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Completed" />
+                  <ClickableStatCard title="Cancelled"     value={cancelledOrdersAll.length}  color="red"    icon={<XCircle />}     onClick={() => setStatModal('cancelled')} sub="Review" />
+                  <ClickableStatCard title="Active Now"    value={activeOrdersAll.length}     color="indigo" icon={<Truck />}       onClick={() => setStatModal('active')}    sub="In progress" />
                 </div>
 
                 <div className="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-lg">
@@ -1724,7 +1710,6 @@ function Dashboard() {
                   </div>
                 )}
 
-                {/* ✅ Quick Stats Breakdown (replaces full leaderboard) */}
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                   <h3 className="font-bold text-gray-900 mb-4">Quick Stats</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -1742,7 +1727,6 @@ function Dashboard() {
                   </div>
                 </div>
 
-                {/* ✅ Rider Summary Cards (lighter than leaderboard) */}
                 {riders.length > 0 && (
                   <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                     <div className="p-6 border-b border-gray-100 flex items-center justify-between">
@@ -1750,7 +1734,7 @@ function Dashboard() {
                       <span className="text-xs text-gray-400 font-bold">{riders.length} riders</span>
                     </div>
                     <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {riders.slice(0, 6).map((rider, i) => (
+                      {riders.slice(0, 6).map((rider) => (
                         <div key={rider.name} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                           <div className="flex items-center gap-3 mb-3">
                             <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shrink-0">
@@ -1774,19 +1758,18 @@ function Dashboard() {
             )
           })()}
 
-          {/* ═══════════════════════════════════════════════════════
-              ✅ SETTINGS VIEW — ENHANCED WITH TABS
-          ═══════════════════════════════════════════════════════ */}
+          {/* ═══════════════════════════════════════════
+              SETTINGS VIEW
+          ═══════════════════════════════════════════ */}
           {activeView === 'settings' && (
             <div className="max-w-2xl mx-auto space-y-6">
-              {/* ✅ Settings Tabs */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="flex border-b border-gray-100 overflow-x-auto">
                   {[
-                    { id: 'profile',  label: 'Profile',   icon: <UserCircle className="w-4 h-4" /> },
-                    { id: 'security', label: 'Security',  icon: <Lock className="w-4 h-4" /> },
-                    { id: 'account',  label: 'Account',   icon: <Hash className="w-4 h-4" /> },
-                    { id: 'notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
+                    { id: 'profile',       label: 'Profile',        icon: <UserCircle className="w-4 h-4" /> },
+                    { id: 'security',      label: 'Security',       icon: <Lock className="w-4 h-4" /> },
+                    { id: 'account',       label: 'Account',        icon: <Hash className="w-4 h-4" /> },
+                    { id: 'notifications', label: 'Notifications',  icon: <Bell className="w-4 h-4" /> },
                   ].map(tab => (
                     <button
                       key={tab.id}
@@ -1800,10 +1783,9 @@ function Dashboard() {
                   ))}
                 </div>
 
-                {/* ✅ PROFILE TAB */}
+                {/* PROFILE TAB */}
                 {settingsTab === 'profile' && (
                   <div className="p-6 space-y-6">
-                    {/* Profile Picture Upload */}
                     <div>
                       <p className="text-xs font-bold text-gray-700 uppercase mb-4">Profile Picture</p>
                       <div className="flex items-center gap-6">
@@ -1833,27 +1815,12 @@ function Dashboard() {
                           <p className="text-sm font-bold text-gray-900">{merchant.business_name}</p>
                           <p className="text-xs text-gray-500 mt-1">JPG, PNG up to 5MB</p>
                           <div className="flex gap-2 mt-3">
-                            <button
-                              onClick={() => profilePicInputRef.current?.click()}
-                              className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-all border border-blue-200"
-                            >
-                              Upload Photo
-                            </button>
+                            <button onClick={() => profilePicInputRef.current?.click()} className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-all border border-blue-200">Upload Photo</button>
                             {profilePicturePreview && (
-                              <button
-                                onClick={handleSaveProfilePicture}
-                                className="text-xs font-bold text-white bg-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-all"
-                              >
-                                Save
-                              </button>
+                              <button onClick={handleSaveProfilePicture} className="text-xs font-bold text-white bg-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-all">Save</button>
                             )}
                             {profilePicturePreview && (
-                              <button
-                                onClick={() => { setProfilePicturePreview(null); setProfilePicture(null); deleteProfilePictureFromDB() }}
-                                className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-all border border-red-200"
-                              >
-                                Remove
-                              </button>
+                              <button onClick={() => { setProfilePicturePreview(null); setProfilePicture(null); deleteProfilePictureFromDB() }} className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-all border border-red-200">Remove</button>
                             )}
                           </div>
                         </div>
@@ -1862,7 +1829,6 @@ function Dashboard() {
 
                     <div className="h-px bg-gray-100" />
 
-                    {/* Business Info */}
                     <div>
                       <p className="text-xs font-bold text-gray-700 uppercase mb-4">Business Information</p>
                       <div className="space-y-4">
@@ -1901,10 +1867,9 @@ function Dashboard() {
                   </div>
                 )}
 
-                {/* ✅ SECURITY TAB */}
+                {/* SECURITY TAB */}
                 {settingsTab === 'security' && (
                   <div className="p-6 space-y-8">
-                    {/* Change Password */}
                     <div>
                       <div className="flex items-center gap-2 mb-4">
                         <div className="bg-blue-50 p-1.5 rounded-lg"><Lock className="w-4 h-4 text-blue-600" /></div>
@@ -1916,34 +1881,16 @@ function Dashboard() {
                       <div className="space-y-3">
                         <div>
                           <label className="block text-xs font-bold text-gray-700 uppercase mb-2">Current Password</label>
-                          <input
-                            type="password"
-                            value={passwordForm.current}
-                            onChange={e => setPasswordForm(p => ({ ...p, current: e.target.value }))}
-                            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                            placeholder="Enter current password"
-                          />
+                          <input type="password" value={passwordForm.current} onChange={e => setPasswordForm(p => ({ ...p, current: e.target.value }))} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Enter current password" />
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
                             <label className="block text-xs font-bold text-gray-700 uppercase mb-2">New Password</label>
-                            <input
-                              type="password"
-                              value={passwordForm.new}
-                              onChange={e => setPasswordForm(p => ({ ...p, new: e.target.value }))}
-                              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                              placeholder="Min. 6 characters"
-                            />
+                            <input type="password" value={passwordForm.new} onChange={e => setPasswordForm(p => ({ ...p, new: e.target.value }))} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Min. 6 characters" />
                           </div>
                           <div>
                             <label className="block text-xs font-bold text-gray-700 uppercase mb-2">Confirm New Password</label>
-                            <input
-                              type="password"
-                              value={passwordForm.confirm}
-                              onChange={e => setPasswordForm(p => ({ ...p, confirm: e.target.value }))}
-                              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                              placeholder="Repeat new password"
-                            />
+                            <input type="password" value={passwordForm.confirm} onChange={e => setPasswordForm(p => ({ ...p, confirm: e.target.value }))} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Repeat new password" />
                           </div>
                         </div>
                         {passwordMsg && (
@@ -1952,11 +1899,7 @@ function Dashboard() {
                             {passwordMsg.text}
                           </div>
                         )}
-                        <button
-                          onClick={handleChangePassword}
-                          disabled={!passwordForm.current || !passwordForm.new || !passwordForm.confirm}
-                          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                        >
+                        <button onClick={handleChangePassword} disabled={!passwordForm.current || !passwordForm.new || !passwordForm.confirm} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
                           <Lock className="w-4 h-4" />Update Password
                         </button>
                       </div>
@@ -1964,7 +1907,6 @@ function Dashboard() {
 
                     <div className="h-px bg-gray-100" />
 
-                    {/* Change Email */}
                     <div>
                       <div className="flex items-center gap-2 mb-4">
                         <div className="bg-indigo-50 p-1.5 rounded-lg"><Mail className="w-4 h-4 text-indigo-600" /></div>
@@ -1979,23 +1921,11 @@ function Dashboard() {
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 uppercase mb-2">New Email Address</label>
-                          <input
-                            type="email"
-                            value={emailForm.new}
-                            onChange={e => setEmailForm(p => ({ ...p, new: e.target.value }))}
-                            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                            placeholder="new@email.com"
-                          />
+                          <input type="email" value={emailForm.new} onChange={e => setEmailForm(p => ({ ...p, new: e.target.value }))} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="new@email.com" />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 uppercase mb-2">Confirm New Email</label>
-                          <input
-                            type="email"
-                            value={emailForm.confirm}
-                            onChange={e => setEmailForm(p => ({ ...p, confirm: e.target.value }))}
-                            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                            placeholder="Repeat new email"
-                          />
+                          <input type="email" value={emailForm.confirm} onChange={e => setEmailForm(p => ({ ...p, confirm: e.target.value }))} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Repeat new email" />
                         </div>
                         {emailMsg && (
                           <div className={`p-3 rounded-lg text-sm font-semibold flex items-center gap-2 ${emailMsg.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
@@ -2003,11 +1933,7 @@ function Dashboard() {
                             {emailMsg.text}
                           </div>
                         )}
-                        <button
-                          onClick={handleChangeEmail}
-                          disabled={!emailForm.new || !emailForm.confirm}
-                          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                        >
+                        <button onClick={handleChangeEmail} disabled={!emailForm.new || !emailForm.confirm} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
                           <Mail className="w-4 h-4" />Update Email
                         </button>
                       </div>
@@ -2015,7 +1941,7 @@ function Dashboard() {
                   </div>
                 )}
 
-                {/* ✅ ACCOUNT TAB */}
+                {/* ACCOUNT TAB */}
                 {settingsTab === 'account' && (
                   <div className="p-6 space-y-6">
                     <div>
@@ -2039,7 +1965,6 @@ function Dashboard() {
 
                     <div className="h-px bg-gray-100" />
 
-                    {/* Danger Zone */}
                     <div>
                       <div className="flex items-center gap-2 mb-4">
                         <div className="bg-red-50 p-1.5 rounded-lg"><AlertTriangle className="w-4 h-4 text-red-600" /></div>
@@ -2061,14 +1986,14 @@ function Dashboard() {
                   </div>
                 )}
 
-                {/* ✅ NOTIFICATIONS TAB */}
+                {/* NOTIFICATIONS TAB */}
                 {settingsTab === 'notifications' && (
                   <div className="p-6 space-y-4">
                     <p className="text-xs font-bold text-gray-500 uppercase mb-4">Choose which events trigger in-app notifications</p>
                     {[
-                      ['notification_orders',   'New / Cancelled Orders',    'Alert when an order status changes'],
-                      ['notification_riders',   'Rider Assignments',          'Alert when a rider is assigned to your order'],
-                      ['notification_delivered','Delivery Confirmations',     'Alert when an order is successfully delivered'],
+                      ['notification_orders',    'New / Cancelled Orders',   'Alert when an order status changes'],
+                      ['notification_riders',    'Rider Assignments',         'Alert when a rider is assigned to your order'],
+                      ['notification_delivered', 'Delivery Confirmations',   'Alert when an order is successfully delivered'],
                     ].map(([key, label, desc]) => (
                       <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                         <div>
@@ -2114,33 +2039,33 @@ function Dashboard() {
 }
 
 // ============================================================
-// ✅ CLICKABLE STAT CARD
+// CLICKABLE STAT CARD
 // ============================================================
 function ClickableStatCard({ title, value, color, icon, onClick, sub, trend, trendUp }) {
   const colorMap = {
-    blue:   { bg: 'bg-blue-600',    ring: 'focus:ring-blue-300',   hover: 'hover:shadow-blue-100',   accent: 'bg-blue-600' },
-    yellow: { bg: 'bg-amber-500',   ring: 'focus:ring-amber-300',  hover: 'hover:shadow-amber-100',  accent: 'bg-amber-500' },
-    green:  { bg: 'bg-emerald-600', ring: 'focus:ring-emerald-300',hover: 'hover:shadow-emerald-100',accent: 'bg-emerald-600' },
-    red:    { bg: 'bg-red-600',     ring: 'focus:ring-red-300',    hover: 'hover:shadow-red-100',    accent: 'bg-red-600' },
-    indigo: { bg: 'bg-indigo-600',  ring: 'focus:ring-indigo-300', hover: 'hover:shadow-indigo-100', accent: 'bg-indigo-600' },
+    blue:   { bg: 'bg-blue-600',    ring: 'focus:ring-blue-300',    hover: 'hover:shadow-blue-100',    accent: 'bg-blue-600' },
+    yellow: { bg: 'bg-amber-500',   ring: 'focus:ring-amber-300',   hover: 'hover:shadow-amber-100',   accent: 'bg-amber-500' },
+    green:  { bg: 'bg-emerald-600', ring: 'focus:ring-emerald-300', hover: 'hover:shadow-emerald-100', accent: 'bg-emerald-600' },
+    red:    { bg: 'bg-red-600',     ring: 'focus:ring-red-300',     hover: 'hover:shadow-red-100',     accent: 'bg-red-600' },
+    indigo: { bg: 'bg-indigo-600',  ring: 'focus:ring-indigo-300',  hover: 'hover:shadow-indigo-100',  accent: 'bg-indigo-600' },
   }
   const c = colorMap[color] || colorMap.blue
 
   return (
-   <button
-  onClick={onClick}
-  className={`group relative bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-6 border border-gray-100 text-left w-full min-w-0 transition-all duration-200 hover:shadow-lg ${c.hover} hover:-translate-y-0.5 focus:outline-none focus:ring-2 ${c.ring} active:scale-95`}
->
+    <button
+      onClick={onClick}
+      className={`group relative bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-5 border border-gray-100 text-left w-full min-w-0 overflow-hidden transition-all duration-200 hover:shadow-lg ${c.hover} hover:-translate-y-0.5 focus:outline-none focus:ring-2 ${c.ring} active:scale-95`}
+    >
       <div className="absolute top-1 right-1 sm:top-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400">
         <Eye className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
       </div>
       <div className="flex items-center justify-between mb-1">
         <p className="text-gray-400 text-[8px] sm:text-[10px] font-bold uppercase tracking-tighter sm:tracking-widest pr-2 truncate">{title}</p>
-        <div className={`${c.bg} p-1.5 sm:p-3.5 rounded-md sm:rounded-2xl shadow-lg shrink-0`}>
-          {React.cloneElement(icon, { className: 'w-3 h-3 sm:w-5 sm:h-5 text-white' })}
+        <div className={`${c.bg} p-1 sm:p-2.5 rounded-md sm:rounded-xl shadow-lg shrink-0`}>
+          {React.cloneElement(icon, { className: 'w-3 h-3 sm:w-4 sm:h-4 text-white' })}
         </div>
       </div>
-      <p className="text-xl sm:text-4xl font-bold text-gray-900 tracking-tight leading-none mb-1 sm:mb-2">{value}</p>
+      <p className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight leading-none mb-1 sm:mb-2">{value}</p>
       <div className="flex items-center justify-between">
         {sub && <p className="text-[7px] sm:text-[10px] text-gray-400 truncate">{sub}</p>}
         {trend && (
@@ -2156,7 +2081,7 @@ function ClickableStatCard({ title, value, color, icon, onClick, sub, trend, tre
 }
 
 // ============================================================
-// ✅ SIDEBAR ITEM — blue sidebar variant with richer detail
+// SIDEBAR ITEM
 // ============================================================
 function SidebarItem({ icon, label, description, active, onClick, badge, badgeColor = 'bg-blue-500' }) {
   return (
@@ -2168,14 +2093,11 @@ function SidebarItem({ icon, label, description, active, onClick, badge, badgeCo
           : 'text-blue-100 hover:bg-white/10 hover:text-white'
       }`}
     >
-      {/* Icon with active highlight */}
       <div className={`shrink-0 p-1.5 rounded-lg transition-all ${
         active ? 'bg-white/20 text-white' : 'text-blue-300 group-hover:text-white group-hover:bg-white/10'
       }`}>
         {icon}
       </div>
-
-      {/* Label + description */}
       <div className="flex-1 min-w-0">
         <p className={`text-xs font-bold leading-tight ${active ? 'text-white' : 'text-blue-100 group-hover:text-white'}`}>
           {label}
@@ -2188,8 +2110,6 @@ function SidebarItem({ icon, label, description, active, onClick, badge, badgeCo
           </p>
         )}
       </div>
-
-      {/* Badge */}
       {badge !== null && badge !== undefined && (
         <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black shrink-0 ${
           active ? 'bg-white text-blue-700' : 'bg-white/10 text-blue-200 group-hover:bg-white/20'
@@ -2197,8 +2117,6 @@ function SidebarItem({ icon, label, description, active, onClick, badge, badgeCo
           {badge}
         </span>
       )}
-
-      {/* Active indicator dot */}
       {active && (
         <div className="w-1.5 h-1.5 rounded-full bg-white shrink-0 shadow-sm" />
       )}
@@ -2211,14 +2129,14 @@ function SidebarItem({ icon, label, description, active, onClick, badge, badgeCo
 // ============================================================
 function BatchOrderGroup({ batchId, orders, merchant, onCancelOrder }) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const allDelivered = orders.every((o) => o.status === 'delivered')
-  const allCancelled = orders.every((o) => o.status === 'cancelled')
-  const pendingCount = orders.filter((o) => o.status === 'pending').length
-  const assignedCount = orders.filter((o) => o.status === 'assigned' || o.status === 'picked_up').length
+  const allDelivered   = orders.every((o) => o.status === 'delivered')
+  const allCancelled   = orders.every((o) => o.status === 'cancelled')
+  const pendingCount   = orders.filter((o) => o.status === 'pending').length
+  const assignedCount  = orders.filter((o) => o.status === 'assigned' || o.status === 'picked_up').length
   const deliveredCount = orders.filter((o) => o.status === 'delivered').length
   const cancelledCount = orders.filter((o) => o.status === 'cancelled').length
-  const firstDriver = orders[0]?.driver_id
-  const sameDriver = orders.every((o) => o.driver_id === firstDriver)
+  const firstDriver    = orders[0]?.driver_id
+  const sameDriver     = orders.every((o) => o.driver_id === firstDriver)
 
   return (
     <div className={`bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl shadow-md p-6 mb-6 border-l-[8px] ${allDelivered ? 'border-l-green-600' : allCancelled ? 'border-l-gray-400' : 'border-l-purple-600'} font-bold`}>
@@ -2249,9 +2167,9 @@ function BatchOrderGroup({ batchId, orders, merchant, onCancelOrder }) {
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
           <div className="h-full flex">
-            <div className="bg-amber-400" style={{ width: `${(pendingCount / orders.length) * 100}%` }} />
-            <div className="bg-blue-500" style={{ width: `${(assignedCount / orders.length) * 100}%` }} />
-            <div className="bg-green-600" style={{ width: `${(deliveredCount / orders.length) * 100}%` }} />
+            <div className="bg-amber-400"  style={{ width: `${(pendingCount   / orders.length) * 100}%` }} />
+            <div className="bg-blue-500"   style={{ width: `${(assignedCount  / orders.length) * 100}%` }} />
+            <div className="bg-green-600"  style={{ width: `${(deliveredCount / orders.length) * 100}%` }} />
             {cancelledCount > 0 && <div className="bg-gray-400" style={{ width: `${(cancelledCount / orders.length) * 100}%` }} />}
           </div>
         </div>
@@ -2309,9 +2227,9 @@ function OrderCard({ order, merchant, isInBatch = false, dropNumber = null, onCa
 
   const paymentLabel = {
     cash_on_delivery: '💵 Cash on Delivery',
-    mobile_money: '📱 Mobile Money',
-    card: '💳 Card Payment',
-    bank_transfer: '🏦 Bank Transfer',
+    mobile_money:     '📱 Mobile Money',
+    card:             '💳 Card Payment',
+    bank_transfer:    '🏦 Bank Transfer',
   }
 
   return (
@@ -2363,10 +2281,9 @@ function OrderCard({ order, merchant, isInBatch = false, dropNumber = null, onCa
         </div>
         <div className="space-y-4">
           <MapRow label="Pickup Address" address={order.pickup_address} color="text-emerald-600" />
-          <MapRow label="Destination" address={order.dropoff_address} color="text-rose-600" />
+          <MapRow label="Destination"    address={order.dropoff_address} color="text-rose-600" />
           <div className="flex items-center justify-between pt-2">
             <span className="text-blue-700 text-xl tracking-tight">GH₵ {order.price || '0.00'}</span>
-            {/* ✅ Payment Method Badge */}
             {order.payment_method && (
               <span className="text-[10px] font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded-lg border border-gray-200 uppercase">
                 {paymentLabel[order.payment_method] || order.payment_method}
@@ -2396,10 +2313,10 @@ function OrderCard({ order, merchant, isInBatch = false, dropNumber = null, onCa
 
       {showLogs && (
         <div className="mt-4 p-5 bg-gray-50 rounded-xl space-y-4 border border-gray-200 border-dashed">
-          <TimelineStep label="ORDER INITIALIZED" time={formatTime(order.created_at)} isDone={true} />
-          <TimelineStep label="RIDER ASSIGNED" time={formatTime(order.assigned_at)} isDone={!!order.driver_id} />
-          <TimelineStep label="PICKED UP" time={formatTime(order.picked_up_at)} isDone={order.status === 'picked_up' || order.status === 'delivered'} />
-          <TimelineStep label="DELIVERED" time={formatTime(order.delivered_at)} isDone={order.status === 'delivered'} />
+          <TimelineStep label="ORDER INITIALIZED" time={formatTime(order.created_at)}  isDone={true} />
+          <TimelineStep label="RIDER ASSIGNED"    time={formatTime(order.assigned_at)} isDone={!!order.driver_id} />
+          <TimelineStep label="PICKED UP"         time={formatTime(order.picked_up_at)} isDone={order.status === 'picked_up' || order.status === 'delivered'} />
+          <TimelineStep label="DELIVERED"         time={formatTime(order.delivered_at)} isDone={order.status === 'delivered'} />
           {order.status === 'cancelled' && <TimelineStep label="CANCELLED" time={formatTime(order.cancelled_at)} isDone={true} isRed={true} />}
         </div>
       )}
@@ -2411,7 +2328,7 @@ function DetailRow({ label, name, phone }) {
   return (
     <div className="flex items-start gap-3">
       <div className="mt-1"><UserCircle className="w-5 h-5 text-gray-300" /></div>
-      <div>
+      <div className="min-w-0">
         <p className="text-[9px] uppercase font-bold text-gray-400 tracking-tighter">{label}</p>
         <p className="font-bold text-gray-800 text-sm leading-tight uppercase">{name}</p>
         {phone && <p className="text-[11px] font-semibold text-gray-500 tracking-tight">{phone}</p>}
@@ -2424,9 +2341,9 @@ function MapRow({ label, address, color }) {
   return (
     <div className="flex items-start gap-3">
       <div className="mt-1"><MapPin className={`w-5 h-5 ${color} opacity-80`} /></div>
-      <div>
+      <div className="min-w-0">
         <p className="text-[9px] uppercase font-bold text-gray-400 tracking-tighter">{label}</p>
-        <p className="font-bold text-gray-800 text-sm leading-tight uppercase line-clamp-1">{address}</p>
+        <p className="font-bold text-gray-800 text-sm leading-tight uppercase line-clamp-2">{address}</p>
       </div>
     </div>
   )
@@ -2435,7 +2352,7 @@ function MapRow({ label, address, color }) {
 function TimelineStep({ label, time, isDone, isRed = false }) {
   return (
     <div className="flex items-center gap-4 font-bold">
-      <div className={`w-4 h-4 rounded-full border-2 ${isRed ? 'bg-red-500 border-red-500' : isDone ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'}`} />
+      <div className={`w-4 h-4 rounded-full border-2 shrink-0 ${isRed ? 'bg-red-500 border-red-500' : isDone ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'}`} />
       <div className="flex-1 flex justify-between items-center border-b border-gray-200 pb-1">
         <span className={`text-[10px] uppercase ${isRed ? 'text-red-600' : isDone ? 'text-gray-900' : 'text-gray-400'}`}>{label}</span>
         <span className={`text-[10px] ${isRed ? 'text-red-500' : 'text-blue-600'}`}>{time || '--:--'}</span>
