@@ -1116,7 +1116,7 @@ function Dashboard() {
           ═══════════════════════════════════════════════════════ */}
           {activeView === 'dashboard' && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-6">
                 <ClickableStatCard title="My Orders"  value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
                 <ClickableStatCard title="Pending"    value={pendingOrdersAll.length}    color="yellow" icon={<Clock />}       onClick={() => setStatModal('pending')}   sub="Awaiting assignment" />
                 <ClickableStatCard title="Delivered"  value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Successfully completed" />
@@ -1212,7 +1212,7 @@ function Dashboard() {
           ═══════════════════════════════════════════════════════ */}
           {activeView === 'orders' && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-6">
                 <ClickableStatCard title="Total Orders"  value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
                 <ClickableStatCard title="Pending"       value={pendingOrdersAll.length}    color="yellow" icon={<Clock />}       onClick={() => setStatModal('pending')}   sub="Awaiting rider" />
                 <ClickableStatCard title="Delivered"     value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Completed" />
@@ -1242,7 +1242,7 @@ function Dashboard() {
           ═══════════════════════════════════════════════════════ */}
           {activeView === 'track' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                 <ClickableStatCard title="Active Deliveries" value={activeOrdersAll.length} color="blue" icon={<Truck />} onClick={() => setStatModal('active')} sub="In progress right now" />
                 <ClickableStatCard title="Awaiting Pickup" value={orders.filter(o => o.status === 'assigned').length} color="yellow" icon={<Clock />} onClick={() => setStatModal('pending')} sub="Assigned, not picked up" />
                 <ClickableStatCard title="Out for Delivery" value={orders.filter(o => o.status === 'picked_up').length} color="indigo" icon={<MapPin />} sub="En route to receiver" />
@@ -1410,7 +1410,7 @@ function Dashboard() {
             const maxCount = Math.max(...last7.map(d => d.count), 1)
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                   {[
                     { label: 'Total Revenue',    value: `GH₵ ${totalRev.toFixed(2)}`,  sub: 'All time delivered', color: 'green' },
                     { label: "Today's Revenue",  value: `GH₵ ${todayRev.toFixed(2)}`,  sub: `${todayDel.length} orders today`, color: 'blue' },
@@ -1539,7 +1539,7 @@ function Dashboard() {
             
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                   <ClickableStatCard title="Total Revenue" value={`GH₵ ${totalRevenue.toFixed(0)}`} color="green" icon={<DollarSign />} onClick={() => setStatModal('delivered')} sub="From deliveries" />
                   <ClickableStatCard title="Digital Payments" value={`GH₵ ${digitalRevenue.toFixed(0)}`} color="blue" icon={<Smartphone />} sub={`${completedOrders.filter(o => (o.payment_method || 'cash_on_delivery') !== 'cash_on_delivery').length} orders` || 'Processed'} />
                   <ClickableStatCard title="Cash Pending" value={`GH₵ ${pendingDeliveryRevenue.toFixed(0)}`} color="yellow" icon={<Banknote />} sub={`${completedOrders.filter(o => (o.payment_method || 'cash_on_delivery') === 'cash_on_delivery').length} orders`} />
@@ -1671,7 +1671,7 @@ function Dashboard() {
 
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                   <ClickableStatCard title="Total Orders"   value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
                   <ClickableStatCard title="Delivered"      value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Completed" />
                   <ClickableStatCard title="Cancelled"      value={cancelledOrdersAll.length}  color="red"    icon={<XCircle />}     onClick={() => setStatModal('cancelled')} sub="Click to review" />
