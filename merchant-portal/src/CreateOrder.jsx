@@ -50,7 +50,7 @@ function PaymentMethodSelector({ value, onChange }) {
       <label className="block text-sm font-semibold text-gray-700 mb-2">
         Payment Method <span className="text-gray-400 font-normal">(optional)</span>
       </label>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {PAYMENT_METHODS.map((method) => {
           const isSelected = value === method.id
           return (
@@ -589,7 +589,7 @@ function CreateOrder({ merchant, onClose, onOrderCreated }) {
               </h3>
 
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm text-gray-700 mb-1">Business Name</label>
                     <input
@@ -656,7 +656,7 @@ function CreateOrder({ merchant, onClose, onOrderCreated }) {
               <div className="border border-gray-200 rounded-lg p-4 bg-white">
                 <h3 className="font-semibold mb-3 text-gray-900">Recipient Details</h3>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm text-gray-700 mb-1">Receiver Name *</label>
                     <input
@@ -810,7 +810,7 @@ function CreateOrder({ merchant, onClose, onOrderCreated }) {
                         )}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-sm text-gray-700 mb-1">Receiver Name *</label>
                           <input

@@ -950,7 +950,7 @@ function Dashboard() {
           </div>
 
           {/* ✅ Quick Stats Strip */}
-          <div className="px-4 py-3 border-b border-blue-600/30 grid grid-cols-3 gap-2 overflow-x-auto scrollbar-hide">
+          <div className="px-4 py-3 border-b border-blue-600/30 flex gap-2 overflow-x-auto scrollbar-hide">
             {[
               { label: 'Pending', value: pendingOrdersAll.length, color: 'bg-amber-400/20 text-amber-200' },
               { label: 'Active',  value: activeOrdersAll.length,  color: 'bg-white/20 text-white' },
@@ -1116,7 +1116,7 @@ function Dashboard() {
           ═══════════════════════════════════════════════════════ */}
           {activeView === 'dashboard' && (
             <>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2.5 mb-6">
                 <ClickableStatCard title="My Orders"  value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
                 <ClickableStatCard title="Pending"    value={pendingOrdersAll.length}    color="yellow" icon={<Clock />}       onClick={() => setStatModal('pending')}   sub="Awaiting assignment" />
                 <ClickableStatCard title="Delivered"  value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Successfully completed" />
@@ -1212,7 +1212,7 @@ function Dashboard() {
           ═══════════════════════════════════════════════════════ */}
           {activeView === 'orders' && (
             <>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2.5 mb-6">
                 <ClickableStatCard title="Total Orders"  value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
                 <ClickableStatCard title="Pending"       value={pendingOrdersAll.length}    color="yellow" icon={<Clock />}       onClick={() => setStatModal('pending')}   sub="Awaiting rider" />
                 <ClickableStatCard title="Delivered"     value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Completed" />
@@ -1242,7 +1242,7 @@ function Dashboard() {
           ═══════════════════════════════════════════════════════ */}
           {activeView === 'track' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-1 sm:gap-2.5">
                 <ClickableStatCard title="Active Deliveries" value={activeOrdersAll.length} color="blue" icon={<Truck />} onClick={() => setStatModal('active')} sub="In progress right now" />
                 <ClickableStatCard title="Awaiting Pickup" value={orders.filter(o => o.status === 'assigned').length} color="yellow" icon={<Clock />} onClick={() => setStatModal('pending')} sub="Assigned, not picked up" />
                 <ClickableStatCard title="Out for Delivery" value={orders.filter(o => o.status === 'picked_up').length} color="indigo" icon={<MapPin />} sub="En route to receiver" />
@@ -1295,7 +1295,7 @@ function Dashboard() {
                               {order.status === 'picked_up' ? '🚴 Out for Delivery' : '⏳ Assigned'}
                             </span>
                           </div>
-                          <div className="grid md:grid-cols-2 gap-3 text-sm">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                             <div className="flex items-start gap-2">
                               <MapPin className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
                               <div><p className="text-[10px] text-gray-400 uppercase font-bold">Pickup</p><p className="text-gray-700 font-semibold">{order.pickup_address}</p></div>
@@ -1410,7 +1410,7 @@ function Dashboard() {
             const maxCount = Math.max(...last7.map(d => d.count), 1)
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2.5">
                   {[
                     { label: 'Total Revenue',    value: `GH₵ ${totalRev.toFixed(2)}`,  sub: 'All time delivered', color: 'green' },
                     { label: "Today's Revenue",  value: `GH₵ ${todayRev.toFixed(2)}`,  sub: `${todayDel.length} orders today`, color: 'blue' },
@@ -1424,7 +1424,7 @@ function Dashboard() {
                     </div>
                   ))}
                 </div>
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                     <h3 className="text-base font-bold text-gray-900 mb-4">Orders — Last 7 Days</h3>
                     <div className="flex items-end gap-2 h-32">
@@ -1494,7 +1494,7 @@ function Dashboard() {
                       <h3 className="text-base font-bold text-gray-900">Cancellation Summary</h3>
                       <span className="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full uppercase">{cancelRate}% cancel rate</span>
                     </div>
-                    <div className="p-6 grid md:grid-cols-3 gap-4">
+                    <div className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="bg-gray-50 rounded-xl p-4 text-center"><p className="text-3xl font-bold text-gray-800">{cancelled.length}</p><p className="text-xs text-gray-500 font-bold uppercase mt-1">Total Cancelled</p></div>
                       <div className="bg-red-50 rounded-xl p-4 text-center"><p className="text-3xl font-bold text-red-700">{cancelled.filter(o=>o.cancelled_by==='Admin').length}</p><p className="text-xs text-red-400 font-bold uppercase mt-1">By Admin</p></div>
                       <div className="bg-amber-50 rounded-xl p-4 text-center"><p className="text-3xl font-bold text-amber-700">{cancelled.filter(o=>o.cancelled_by!=='Admin').length}</p><p className="text-xs text-amber-400 font-bold uppercase mt-1">By Merchant</p></div>
@@ -1539,7 +1539,7 @@ function Dashboard() {
             
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2.5">
                   <ClickableStatCard title="Total Revenue" value={`GH₵ ${totalRevenue.toFixed(0)}`} color="green" icon={<DollarSign />} onClick={() => setStatModal('delivered')} sub="From deliveries" />
                   <ClickableStatCard title="Digital Payments" value={`GH₵ ${digitalRevenue.toFixed(0)}`} color="blue" icon={<Smartphone />} sub={`${completedOrders.filter(o => (o.payment_method || 'cash_on_delivery') !== 'cash_on_delivery').length} orders` || 'Processed'} />
                   <ClickableStatCard title="Cash Pending" value={`GH₵ ${pendingDeliveryRevenue.toFixed(0)}`} color="yellow" icon={<Banknote />} sub={`${completedOrders.filter(o => (o.payment_method || 'cash_on_delivery') === 'cash_on_delivery').length} orders`} />
@@ -1555,7 +1555,7 @@ function Dashboard() {
                     </div>
                     <span className="text-xs text-gray-400 font-bold">{methodEntries.length} methods</span>
                   </div>
-                  <div className="p-6 grid md:grid-cols-2 gap-4">
+                  <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {methodEntries.map(({ method, count, revenue }) => {
                       const info = methodLabels[method] || methodLabels.cash_on_delivery
                       const pct = totalRevenue ? (revenue / totalRevenue * 100).toFixed(0) : 0
@@ -1671,7 +1671,7 @@ function Dashboard() {
 
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2.5">
                   <ClickableStatCard title="Total Orders"   value={orders.length}              color="blue"   icon={<Package />}    onClick={() => setStatModal('total')}     sub="All time" />
                   <ClickableStatCard title="Delivered"      value={completedOrdersAll.length}  color="green"  icon={<CheckCircle />} onClick={() => setStatModal('delivered')} sub="Completed" />
                   <ClickableStatCard title="Cancelled"      value={cancelledOrdersAll.length}  color="red"    icon={<XCircle />}     onClick={() => setStatModal('cancelled')} sub="Click to review" />
@@ -1748,7 +1748,7 @@ function Dashboard() {
                       <h3 className="font-bold text-gray-900">Rider Summary</h3>
                       <span className="text-xs text-gray-400 font-bold">{riders.length} riders</span>
                     </div>
-                    <div className="p-6 grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {riders.slice(0, 6).map((rider, i) => (
                         <div key={rider.name} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                           <div className="flex items-center gap-3 mb-3">
@@ -1869,7 +1869,7 @@ function Dashboard() {
                           <label className="block text-xs font-bold text-gray-700 uppercase mb-2">Business Name</label>
                           <input type="text" value={settingsForm.business_name} onChange={e => setSettingsForm(p => ({ ...p, business_name: e.target.value }))} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Your Business Name" />
                         </div>
-                        <div className="grid md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-xs font-bold text-gray-700 uppercase mb-2">Contact Phone</label>
                             <input type="tel" value={settingsForm.contact_phone} onChange={e => setSettingsForm(p => ({ ...p, contact_phone: e.target.value }))} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="+233 XX XXX XXXX" />
@@ -1923,7 +1923,7 @@ function Dashboard() {
                             placeholder="Enter current password"
                           />
                         </div>
-                        <div className="grid md:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
                             <label className="block text-xs font-bold text-gray-700 uppercase mb-2">New Password</label>
                             <input
@@ -2128,23 +2128,23 @@ function ClickableStatCard({ title, value, color, icon, onClick, sub, trend, tre
   return (
     <button
       onClick={onClick}
-      className={`group relative bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-6 border border-gray-100 text-left w-full transition-all duration-200 hover:shadow-lg ${c.hover} hover:-translate-y-0.5 focus:outline-none focus:ring-2 ${c.ring} active:scale-95`}
+      className={`group relative bg-white rounded-lg sm:rounded-xl shadow-sm p-2 sm:p-6 border border-gray-100 text-left w-full min-w-0 transition-all duration-200 hover:shadow-lg ${c.hover} hover:-translate-y-0.5 focus:outline-none focus:ring-2 ${c.ring} active:scale-95`}
     >
-      <div className="absolute top-2 right-2 sm:top-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400">
-        <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+      <div className="absolute top-1 right-1 sm:top-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400">
+        <Eye className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
       </div>
       <div className="flex items-center justify-between mb-1">
-        <p className="text-gray-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest pr-5 truncate">{title}</p>
-        <div className={`${c.bg} p-2 sm:p-3.5 rounded-lg sm:rounded-2xl shadow-lg shrink-0`}>
-          {React.cloneElement(icon, { className: 'w-4 h-4 sm:w-5 sm:h-5 text-white' })}
+        <p className="text-gray-400 text-[8px] sm:text-[10px] font-bold uppercase tracking-tighter sm:tracking-widest pr-2 truncate">{title}</p>
+        <div className={`${c.bg} p-1.5 sm:p-3.5 rounded-md sm:rounded-2xl shadow-lg shrink-0`}>
+          {React.cloneElement(icon, { className: 'w-3 h-3 sm:w-5 sm:h-5 text-white' })}
         </div>
       </div>
-      <p className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight leading-none mb-2">{value}</p>
+      <p className="text-xl sm:text-4xl font-bold text-gray-900 tracking-tight leading-none mb-1 sm:mb-2">{value}</p>
       <div className="flex items-center justify-between">
-        {sub && <p className="text-[9px] sm:text-[10px] text-gray-400 truncate">{sub}</p>}
+        {sub && <p className="text-[7px] sm:text-[10px] text-gray-400 truncate">{sub}</p>}
         {trend && (
-          <span className={`flex items-center gap-0.5 text-[9px] sm:text-[10px] font-black ${trendUp ? 'text-emerald-600' : 'text-red-500'}`}>
-            {trendUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+          <span className={`flex items-center gap-0.5 text-[7px] sm:text-[10px] font-black ${trendUp ? 'text-emerald-600' : 'text-red-500'}`}>
+            {trendUp ? <ArrowUpRight className="w-2 h-2 sm:w-3 sm:h-3" /> : <ArrowDownRight className="w-2 h-2 sm:w-3 sm:h-3" />}
             {trend}
           </span>
         )}
@@ -2355,7 +2355,7 @@ function OrderCard({ order, merchant, isInBatch = false, dropNumber = null, onCa
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-8 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-4">
         <div className="space-y-4">
           <DetailRow label="Customer" name={order.customer_name} phone={order.customer_phone} />
           <DetailRow label="Receiver" name={order.receiver_name} phone={order.receiver_phone} />
