@@ -882,7 +882,7 @@ function Dashboard() {
   )
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
 
       {/* ✅ STAT CARD MODAL */}
       {statModal && (
@@ -931,7 +931,7 @@ function Dashboard() {
 
       {/* ✅ LEFT SIDEBAR — BLUE BACKGROUND */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-blue-700 via-blue-800 to-indigo-900 transform transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-56 md:w-64 bg-gradient-to-b from-blue-700 via-blue-800 to-indigo-900 transform transition-transform duration-300 md:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } flex flex-col shadow-2xl ring-1 ring-white/5`}
       >
@@ -1027,7 +1027,7 @@ function Dashboard() {
       </aside>
 
       {/* ✅ MAIN CONTENT */}
-      <div className="flex-1 lg:ml-64">
+      <div className="flex-1 md:ml-64">
         {/* Top Bar */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
           <div className="px-6 py-4 flex items-center justify-between">
